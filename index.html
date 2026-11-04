@@ -654,12 +654,12 @@ function mus(u){
   u = (u || "").trim(); if (!u) return null;
   if (/spotify\.com|music\.apple\.com|soundcloud\.com/i.test(u)) return {bad:1};
   var y = /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/.exec(u); if (y) return {yt:y[1]};
-  var g = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]+)/.exec(u); if (g) return {src:"https://drive.google.com/uc?export=download&id=" + g[1]};
+  var g = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]+)/.exec(u); if (g) return {src:"https://drive.usercontent.google.com/download?id=" + g[1] + "&export=download&confirm=t", alt:["https://drive.google.com/uc?export=download&id=" + g[1], "https://docs.google.com/uc?export=download&id=" + g[1]], drive:1};
   var d = /^(https?:\/\/(?:www\.)?dropbox\.com\/[^?#]+)/.exec(u); if (d) return {src:d[1] + "?raw=1"};
   var h = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^?#]+)/.exec(u); if (h) return {src:"https://raw.githubusercontent.com/" + h[1] + "/" + h[2] + "/" + h[3]};
   return {src:u};
 }
-var MU = mus(CFG.music), audio = null, ytf = null, playing = false;
+var MU = mus(CFG.music), audio = null, ytf = null, playing = false, altI = 0;
 function note(t){var n=document.createElement("div");n.textContent=t;n.style.cssText="position:fixed;left:50%;top:18px;transform:translateX(-50%);max-width:88vw;background:#222;color:#fff;font:500 .8rem/1.4 var(--sans);padding:10px 16px;border-radius:14px;z-index:99;text-align:center";document.body.appendChild(n);setTimeout(function(){n.remove()},4500)}
 function sync(){$("music").classList.toggle("spin",playing)}
 function ytCmd(f){if(ytf&&ytf.contentWindow)ytf.contentWindow.postMessage(JSON.stringify({event:"command",func:f,args:""}),"*")}
@@ -670,7 +670,7 @@ function playM(){
     else ytCmd("playVideo");
     playing = true;
   } else {
-    if (!audio) { audio = new Audio(); audio.loop = true; audio.preload = "auto"; audio.onerror = function(){ playing = false; sync(); note("Lagu tidak dapat diputar. Pastikan link langsung ke file mp3."); }; audio.src = MU.src; }
+    if (!audio) { audio = new Audio(); audio.loop = true; audio.preload = "auto"; audio.onerror = function(){ if (MU.alt && altI < MU.alt.length) { audio.src = MU.alt[altI++]; var q = audio.play(); if (q && q.catch) q.catch(function(){}); return; } playing = false; sync(); note(MU.drive ? "Lagu dari Google Drive diblokir/tidak dapat dimuat. Unggah file mp3 ke hosting yang sama dengan undangan, lalu pakai link-nya." : "Lagu tidak dapat diputar. Pastikan link langsung ke file mp3."); }; audio.src = MU.src; }
     playing = true; var pr = audio.play(); if (pr && pr.catch) pr.catch(function(){ playing = false; sync(); });
   }
   sync();
