@@ -312,10 +312,12 @@ p{text-wrap:pretty}
 .story::before{content:"";position:absolute;left:-34px;top:8px;width:16px;height:16px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px var(--bg);transform:scale(0);transition:transform .6s cubic-bezier(.3,1.8,.5,1) .2s}
 .story.in::before{transform:scale(1)}
 /* galeri */
-.gal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.gal>div{aspect-ratio:1;border-radius:12px;overflow:hidden}
-.gal>div:first-child{grid-column:span 2;aspect-ratio:16/10}
-.gal img{transition:transform .8s}.gal>div:hover img{transform:scale(1.08)}
+.gal{column-count:2;column-gap:10px}
+.gal>div{break-inside:avoid;margin:0 0 10px;border-radius:12px;overflow:hidden;background:var(--line)}
+.gal>div:first-child{column-span:all}
+.gal img{display:block;width:100%;height:auto;transition:transform .8s}.gal>div:hover img{transform:scale(1.04)}
+.gal .ph{height:auto;aspect-ratio:1}.gal>div:first-child .ph{aspect-ratio:16/10}
+.arch img,.circ img{object-position:50% 25%}
 /* form */
 form{display:grid;gap:14px;text-align:left}
 label{font:400 .85rem var(--sans);color:var(--muted)}
@@ -391,6 +393,37 @@ html.k3d.opened .hero>:not(.tw):not(#arch):not(.shim){animation:flyin 1.2s cubic
 html.k3d.opened .hero>.shim{animation:shim 5s linear infinite,flyin 1.2s cubic-bezier(.2,.8,.2,1) .6s both}
 @keyframes archin{from{opacity:0;translate:0 0 -520px;rotate:y -75deg}}
 @keyframes flyin{from{opacity:0;transform:translateZ(-320px) rotateX(28deg)}}
+/* responsif: layar lebar & layar kecil */
+html{overflow-x:hidden}
+#couple>h2{font-size:clamp(1.4rem,7.6vw,2.6rem)!important;overflow-wrap:anywhere}
+h2,h3,.lead{overflow-wrap:break-word}
+nav{max-width:calc(100vw - 12px);overflow-x:auto;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav a{white-space:nowrap}
+@media(min-width:900px){
+  body{font-size:22px}
+  section{padding:100px max(32px,calc((100% - 880px)/2))}
+  .couple{grid-template-columns:1fr auto 1fr;align-items:center;gap:30px}
+  #events{display:grid;grid-template-columns:1fr 1fr;gap:22px}#events .card{margin:0}
+  .gal{column-count:3}
+  .arch{width:min(300px,28vw)}
+  .lead{max-width:36em}
+  #count{max-width:620px;margin-inline:auto}
+  .tl{max-width:640px;margin-inline:auto}
+  .cin{max-width:520px}
+}
+@media(max-width:380px){
+  body{font-size:18px}
+  section{padding:64px 16px}
+  nav a{padding:8px 9px;font-size:.72rem}
+  .circ{width:160px;height:160px}
+  #count{gap:6px}#count b{font-size:1.8rem}
+  .card{padding:30px 16px}
+}
+@media(max-height:640px){
+  #cover{padding:12px}
+  .cin .nm{font-size:2.8rem}.cin .date{margin:2px 0 14px;font-size:1rem}.guest{margin-bottom:12px}.guest b{font-size:1.2rem}
+  .envb{transform:scale(.72);margin:-10px auto -26px}
+}
+@media(max-height:640px) and (orientation:landscape){.hero{padding:30px 0}.arch{width:min(170px,34vh)}}
 </style>
 </head>
 <body>
@@ -578,7 +611,7 @@ document.title = (KD ? KD.top : "The Wedding of") + " " + both;
     var hs = qa("#home>p.small"); hs[0].textContent = KD.top; hs[hs.length-1].textContent = KD.tag;
     q("#verse .ayat").style.display = "none"; q("#verse .small").style.display = "none"; q("#verse .tr").textContent = KD.verse;
     q("#couple h2").textContent = "Assalamualaikum Wr. Wb."; q("#couple .lead").textContent = KD.lead;
-    var cc = qa("#couple .couple>div"); cc[1].style.display = "none"; cc[2].style.display = "none";
+    var cc = qa("#couple .couple>div"); cc[1].style.display = "none"; cc[2].style.display = "none"; q("#couple .couple").style.gridTemplateColumns = "1fr";
     q('nav a[href="#couple"]').textContent = "Profil";
     q("#countdown h2").textContent = KD.count;
     q("#gift h2").textContent = "Kado Digital"; q("#gift .lead").textContent = KD.gift;
@@ -616,15 +649,42 @@ if (!still) {
 }
 
 // buka undangan
-var audio = null;
-function music(){if(!CFG.music)return; if(!audio){audio=new Audio(CFG.music);audio.loop=true} if(audio.paused)audio.play().catch(function(){}); else audio.pause(); $("music").classList.toggle("spin",!audio.paused)}
+// ===== musik: mp3 langsung, Google Drive, Dropbox, GitHub, atau YouTube =====
+function mus(u){
+  u = (u || "").trim(); if (!u) return null;
+  if (/spotify\.com|music\.apple\.com|soundcloud\.com/i.test(u)) return {bad:1};
+  var y = /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/.exec(u); if (y) return {yt:y[1]};
+  var g = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]+)/.exec(u); if (g) return {src:"https://drive.google.com/uc?export=download&id=" + g[1]};
+  var d = /^(https?:\/\/(?:www\.)?dropbox\.com\/[^?#]+)/.exec(u); if (d) return {src:d[1] + "?raw=1"};
+  var h = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^?#]+)/.exec(u); if (h) return {src:"https://raw.githubusercontent.com/" + h[1] + "/" + h[2] + "/" + h[3]};
+  return {src:u};
+}
+var MU = mus(CFG.music), audio = null, ytf = null, playing = false;
+function note(t){var n=document.createElement("div");n.textContent=t;n.style.cssText="position:fixed;left:50%;top:18px;transform:translateX(-50%);max-width:88vw;background:#222;color:#fff;font:500 .8rem/1.4 var(--sans);padding:10px 16px;border-radius:14px;z-index:99;text-align:center";document.body.appendChild(n);setTimeout(function(){n.remove()},4500)}
+function sync(){$("music").classList.toggle("spin",playing)}
+function ytCmd(f){if(ytf&&ytf.contentWindow)ytf.contentWindow.postMessage(JSON.stringify({event:"command",func:f,args:""}),"*")}
+function playM(){
+  if (!MU || MU.bad) return;
+  if (MU.yt) {
+    if (!ytf) { ytf = document.createElement("iframe"); ytf.allow = "autoplay"; ytf.title = "Musik"; ytf.style.cssText = "position:fixed;width:2px;height:2px;left:-9px;top:-9px;opacity:0;pointer-events:none;border:0"; ytf.src = "https://www.youtube.com/embed/" + MU.yt + "?autoplay=1&loop=1&playlist=" + MU.yt + "&enablejsapi=1&playsinline=1"; document.body.appendChild(ytf); }
+    else ytCmd("playVideo");
+    playing = true;
+  } else {
+    if (!audio) { audio = new Audio(); audio.loop = true; audio.preload = "auto"; audio.onerror = function(){ playing = false; sync(); note("Lagu tidak dapat diputar. Pastikan link langsung ke file mp3."); }; audio.src = MU.src; }
+    playing = true; var pr = audio.play(); if (pr && pr.catch) pr.catch(function(){ playing = false; sync(); });
+  }
+  sync();
+}
+function pauseM(){ if (MU && MU.yt) ytCmd("pauseVideo"); else if (audio) audio.pause(); playing = false; sync(); }
+// dipanggil langsung saat tombol diklik (syarat browser/iPhone), termasuk pada tema Envelope yang menunda animasi
+$("open").addEventListener("click", function(){ if (!playing) playM(); });
 $("open").onclick = function(){
   $("cover").classList.add("open"); document.body.classList.remove("lock"); scrollTo(0,0);
   setTimeout(function(){$("cover").classList.add("gone")}, still ? 0 : 1500);
   $("nav").classList.add("on");
-  if (CFG.music) {$("music").style.display="block"; music()}
+  if (MU && !MU.bad) $("music").style.display = "block";
 };
-$("music").onclick = music;
+$("music").onclick = function(){ playing ? pauseM() : playM(); };
 
 // salin
 document.querySelectorAll("[data-copy]").forEach(function(b){b.onclick=function(){var o=b.textContent,d=function(){b.textContent="Tersalin ✓";setTimeout(function(){b.textContent=o},1600)};navigator.clipboard?navigator.clipboard.writeText(b.dataset.copy).then(d,d):d()}});
@@ -859,7 +919,7 @@ function vData(c){
  <div class="sec2">${nw?"Data acara":"Mempelai"}</div><div class="card">${nw?`<label style="margin-top:0">Jenis acara<input value="${esc(tl(c,+mine.theme))}" disabled></label>${f("wn",kl.n)}${f("wf","Nama lengkap")}${f("wp",kl.p)}`:`<p class="sm mu">💐 Mempelai wanita</p>${f("wn","Nama panggilan")}${f("wf","Nama lengkap")}${f("wp","Orang tua (contoh: Putri dari Bapak … dan Ibu …)")}<p class="sm mu" style="margin-top:18px">🤵 Mempelai pria</p>${f("pn","Nama panggilan")}${f("pf","Nama lengkap")}${f("pp","Orang tua (contoh: Putra dari Bapak … dan Ibu …)")}`}${f("tgl","Tanggal dan jam acara utama (untuk hitung mundur)","datetime-local")}</div>
  <div class="sec2">Acara</div>${evs.map((e,i)=>`<div class="card" data-g="ev"><div class="row between"><b>Acara ${i+1}</b>${rm("ev",evs.length,i)}</div>${g("t","Nama acara (Akad Nikah, Resepsi, …)",e.t)}${g("day","Hari, tanggal (contoh: Sabtu, 06 Maret 2027)",e.day)}${g("time","Jam (contoh: 08.00 WIB)",e.time)}${g("place","Nama tempat",e.place)}${g("addr","Alamat",e.addr)}${g("map","Link Google Maps",e.map,"url")}</div>`).join("")}<button class="ghost sm" data-act="add" data-k="ev">+ Tambah acara</button>
  ${nw?"":`<div class="sec2">Love Story</div>${sts.map(s=>`<div class="card" data-g="st">${g("t","Judul",s.t)}<label>Cerita<textarea data-k="p" rows="3">${esc(s.p)}</textarea></label></div>`).join("")}`}
- <div class="sec2">Lagu</div><div class="card">${f("lagu","Judul lagu / artis")}${f("laguurl","Link file musik (mp3)","url")}</div>
+ <div class="sec2">Lagu</div><div class="card">${f("lagu","Judul lagu / artis")}${f("laguurl","Link lagu (mp3 langsung, Google Drive, atau YouTube)","url")}<p class="sm mu" style="margin-top:8px">Google Drive: bagikan dengan akses “Siapa saja yang memiliki link”. Link Spotify, Apple Music, dan SoundCloud tidak didukung. File mp3 langsung paling andal, terutama di iPhone.</p></div>
  <div class="sec2">Rekening / Amplop digital</div>${bks.map((b,i)=>`<div class="card" data-g="bk"><div class="row between"><b>Rekening ${i+1}</b>${rm("bk",bks.length,i)}</div>${g("bank","Nama bank (contoh: Bank BCA)",b.bank)}${g("no","Nomor rekening",b.no)}${g("name","Atas nama",b.name)}<label class="upl"><input type="file" accept="image/*" data-bl="${i}">＋ Logo bank</label>${b.logo?`<div class="photos"><span><img src="${esc(b.logo.url)}" alt="Logo bank"></span></div>`:""}</div>`).join("")}<button class="ghost sm" data-act="add" data-k="bk">+ Tambah rekening</button>
  <div class="sec2">Lainnya</div><div class="card">${f("live","Link live streaming (Instagram / YouTube)","url")}${f("rsvp","Nomor WhatsApp penerima RSVP (628…)","tel")}</div></div>
  <div class="savebar"><button data-act="save">💾 Simpan data</button></div>`}
