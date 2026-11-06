@@ -395,6 +395,37 @@ html.k3d.opened .hero>:not(.tw):not(#arch):not(.shim){animation:flyin 1.2s cubic
 html.k3d.opened .hero>.shim{animation:shim 5s linear infinite,flyin 1.2s cubic-bezier(.2,.8,.2,1) .6s both}
 @keyframes archin{from{opacity:0;translate:0 0 -520px;rotate:y -75deg}}
 @keyframes flyin{from{opacity:0;transform:translateZ(-320px) rotateX(28deg)}}
+/* 3D Motion: foto mempelai bisa di-spin (geser / ketuk) */
+html.k3d .circ{perspective:800px;cursor:grab;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html.k3d .circ.grab{cursor:grabbing}
+.sp3{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.sp3>[data-img],.sp3b{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;border:3px solid var(--surface);overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 14px 26px -12px rgba(0,0,0,.45)}
+.sp3b{transform:rotateY(180deg)}
+.sp3b>*{transform:scaleX(-1)}
+.sp3 img{-webkit-user-drag:none;pointer-events:none}
+/* 3D Motion: kartu acara bisa dibalik & galeri carousel 3D */
+html.k3d .card.sh3{background:none;border:0;box-shadow:none;padding:0;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.k3d .card.sh3::before{display:none}
+.fl3{perspective:1100px;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
+.fl3i{display:grid;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.4,.15,.2,1)}
+.fl3.on .fl3i{transform:rotateY(180deg)}
+.fc{grid-area:1/1;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:36px 22px;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 16px 30px -16px rgba(0,0,0,.4)}
+.fc::before{content:"";position:absolute;inset:7px;border:1px solid var(--gold);opacity:.4;border-radius:12px;pointer-events:none}
+.fc.bk{transform:rotateY(180deg);pointer-events:none}
+.fl3.on .fc.bk{pointer-events:auto}.fl3.on .fc.ft{pointer-events:none}
+.fc .hint{display:block;margin-top:18px;font:400 .78rem var(--sans);color:var(--muted);letter-spacing:.04em}
+.c3w{text-align:center}
+.c3{position:relative;height:calc(var(--ch,260px) + 40px);perspective:1100px;touch-action:pan-y;cursor:grab;-webkit-user-select:none;user-select:none;outline:0;-webkit-tap-highlight-color:transparent}
+.c3.grab{cursor:grabbing}
+.c3s{position:absolute;left:50%;top:14px;width:var(--cw,200px);height:var(--ch,260px);margin-left:calc(var(--cw,200px) / -2);transform-style:preserve-3d}
+.c3i{position:absolute;inset:0;border-radius:14px;overflow:hidden;background:var(--line);border:2px solid var(--surface);-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 18px 30px -14px rgba(0,0,0,.5)}
+.c3i img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+.c3i .ph{height:100%;aspect-ratio:auto}
+.c3n{position:absolute;top:calc(14px + var(--ch,260px) / 2 - 19px);z-index:5;width:38px;height:38px;min-width:0;min-height:0;padding:0;border-radius:50%;border:1px solid var(--gold);background:var(--surface);color:var(--accent);font:400 1.5rem/1 var(--sans);display:grid;place-items:center;box-shadow:0 6px 14px -6px rgba(0,0,0,.4)}
+.c3n.p{left:2px}.c3n.x{right:2px}
+.c3d{display:flex;justify-content:center;gap:10px;margin-top:6px}
+.c3d button{width:10px;height:10px;min-width:0;min-height:0;padding:0;border:0;border-radius:50%;background:var(--line);box-shadow:none;transition:transform .3s,background .3s}
+.c3d button.on{background:var(--gold);transform:scale(1.35)}
 /* responsif: layar lebar & layar kecil */
 html{overflow-x:hidden}
 #couple>h2{font-size:clamp(1.4rem,7.6vw,2.6rem)!important;overflow-wrap:anywhere}
@@ -810,7 +841,10 @@ onScroll();
 (function(){
   var m = /^#tema-(\d+)/.exec(window.__t||location.hash); if (!m) return;
   var n = +m[1];
-  if (n >= 7 && n <= 12) {
+  // Daftar nomor tema per kategori efek (cadangan bila dibuka lewat #tema-NN tanpa katalog). Tambah nomor tema baru di sini.
+  var FX_TEMA = {"3d": [1, 2, 3, 4, 5, 6], "env": [7, 8, 9, 10, 11, 12]};
+  var fx = window.__fx || (FX_TEMA["3d"].indexOf(n) >= 0 ? "3d" : FX_TEMA.env.indexOf(n) >= 0 ? "env" : "");
+  if (fx === "env") {
     var p0 = document.querySelector(".cin>p"), w = document.createElement("div");
     p0.replaceWith(w); w.appendChild(p0); p0.classList.add("ptop");
     w.insertAdjacentHTML("beforeend", '<div class="envb"><div class="bd"></div><div class="lt script">' + esc(both) + '<small>Undangan Pernikahan</small></div><div class="fr"></div><div class="fp"></div><div class="sl">♥</div></div>');
@@ -821,9 +855,129 @@ onScroll();
       setTimeout(go, 2300);
     };
   }
-  if (n >= 1 && n <= 6) {
+  if (fx === "3d") {
     var root = document.documentElement, cv = $("cover"), ar = $("arch");
     root.classList.add("k3d");
+    // foto mempelai bisa diputar: geser kiri/kanan, lempar agar berputar, ketuk untuk sekali putar
+    [].slice.call(document.querySelectorAll(".circ")).forEach(function(c){
+      var f = c.querySelector("[data-img]"); if (!f) return;
+      var w = document.createElement("div"), bk = document.createElement("div");
+      w.className = "sp3"; bk.className = "sp3b"; bk.innerHTML = f.innerHTML;
+      c.insertBefore(w, f); w.appendChild(f); w.appendChild(bk);
+      var ang = 0, vel = 0, down = false, lx = 0, sx = 0, st = 0, mv = 0, raf = 0, pid = null;
+      var set = function(a){ ang = a; w.style.transform = "rotateY(" + a.toFixed(2) + "deg)"; };
+      var loop = function(){
+        raf = 0; if (down) return;
+        if (Math.abs(vel) > 1.2) { set(ang + vel); vel *= .955; }
+        else { var t = Math.round(ang / 180) * 180, d = t - ang; vel = 0; if (Math.abs(d) < .4) { set(t); return; } set(ang + d * .18); }
+        raf = requestAnimationFrame(loop);
+      };
+      var go = function(){ if (!raf) raf = requestAnimationFrame(loop); };
+      c.addEventListener("pointerdown", function(e){
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        down = true; pid = e.pointerId; lx = sx = e.clientX; st = Date.now(); mv = 0; vel = 0; c.classList.add("grab");
+        try { c.setPointerCapture(pid); } catch (x) {}
+      });
+      c.addEventListener("pointermove", function(e){
+        if (!down || e.pointerId !== pid) return;
+        var dx = e.clientX - lx; lx = e.clientX; mv += Math.abs(dx);
+        if (dx) { vel = dx * 1.1; set(ang + vel); }
+      });
+      var end = function(e){
+        if (!down || (e && e.pointerId !== pid)) return;
+        down = false; c.classList.remove("grab");
+        if (mv < 6 && Date.now() - st < 400) vel = still ? 0 : (Math.random() < .5 ? 24 : -24); // ketuk = satu putaran
+        if (still) { vel = 0; }
+        go();
+      };
+      c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end);
+      c.addEventListener("dragstart", function(e){ e.preventDefault(); });
+      // petunjuk: putar sekali saat pertama kali terlihat
+      if (!still && "IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function(en){
+          if (en[0].isIntersecting) { io.disconnect(); setTimeout(function(){ if (!down && !vel && !raf) { vel = 20; go(); } }, 700); }
+        }, {threshold: .7});
+        io.observe(c);
+      }
+    });
+    // kartu acara: ketuk untuk dibalik (depan: waktu & tempat, belakang: alamat & peta)
+    [].slice.call(document.querySelectorAll("#events>.card")).forEach(function(c, i){
+      var e = CFG.events[i]; if (!e) return;
+      c.classList.add("sh3");
+      c.innerHTML = '<div class="fl3" role="button" tabindex="0" aria-pressed="false"><div class="fl3i">'
+        + '<div class="fc ft"><h3 class="script shim">' + esc(e.title) + '</h3><p class="day">' + esc(e.day) + '</p><p class="time sans">Pukul ' + esc(e.time) + '</p><p>' + esc(e.place) + '</p><span class="hint">Ketuk untuk lihat lokasi ↻</span></div>'
+        + '<div class="fc bk"><h3 class="script" style="font-size:2.1rem">' + esc(e.title) + '</h3><p>' + esc(e.place) + '</p><p class="small">' + esc(e.addr) + '</p>'
+        + (e.map ? '<a class="btn alt" href="' + esc(e.map) + '" target="_blank" rel="noopener">Buka Google Maps</a>' : '') + '<span class="hint">↻ Ketuk untuk kembali</span></div>'
+        + '</div></div>';
+      var fl = c.firstChild, tg = function(){ fl.setAttribute("aria-pressed", fl.classList.toggle("on")); };
+      fl.addEventListener("click", function(ev){ if (ev.target.closest("a")) return; tg(); });
+      fl.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); tg(); } });
+    });
+    // galeri: carousel 3D (geser, panah, titik; berputar pelan sendiri saat terlihat)
+    (function(){
+      var g = $("gal"); if (!g) return;
+      var src = [].slice.call(g.children).map(function(d){ return d.innerHTML; }), n = src.length;
+      if (n < 3) return;
+      g.className = "c3w";
+      g.innerHTML = '<div class="c3" tabindex="0" role="region" aria-label="Galeri foto"><div class="c3s">' + src.map(function(h){ return '<div class="c3i">' + h + '</div>'; }).join("")
+        + '</div><button type="button" class="c3n p" aria-label="Sebelumnya">‹</button><button type="button" class="c3n x" aria-label="Berikutnya">›</button></div>'
+        + '<div class="c3d">' + src.map(function(h, i){ return '<button type="button" aria-label="Foto ' + (i + 1) + '"></button>'; }).join("") + '</div>'
+        + '<p class="small" style="margin-top:12px">Geser atau ketuk foto untuk memutar galeri</p>';
+      var box = g.querySelector(".c3"), stage = g.querySelector(".c3s"), items = [].slice.call(g.querySelectorAll(".c3i")), dots = [].slice.call(g.querySelectorAll(".c3d button"));
+      var th = 360 / n, R = 0, a = 0, vel = 0, tgt = null, raf = 0, down = false, pid = null, lx = 0, mv = 0, st = 0, hit = -1, idle = 0, vis = false;
+      var draw = function(){
+        stage.style.transform = "translateZ(" + (-R) + "px) rotateY(" + a.toFixed(2) + "deg)";
+        var k = ((Math.round(-a / th) % n) + n) % n;
+        items.forEach(function(el, i){ var r = ((i * th + a) % 360 + 540) % 360 - 180; el.style.opacity = Math.max(.3, 1 - Math.abs(r) / 120).toFixed(2); });
+        dots.forEach(function(d, i){ d.classList.toggle("on", i === k); });
+      };
+      var layout = function(){
+        var W = box.clientWidth || 320, cw = Math.max(130, Math.min(230, W * .56)), ch = Math.round(cw * 1.3);
+        box.style.setProperty("--cw", cw + "px"); box.style.setProperty("--ch", ch + "px");
+        R = Math.round(cw / 2 / Math.tan(Math.PI / n) + 14);
+        items.forEach(function(el, i){ el.style.transform = "rotateY(" + (i * th) + "deg) translateZ(" + R + "px)"; });
+        draw();
+      };
+      var step = function(){
+        raf = 0; if (down) return;
+        if (tgt === null && Math.abs(vel) > .3) { a += vel; vel *= .94; }
+        else {
+          if (tgt === null) tgt = Math.round(a / th) * th;
+          var d = tgt - a; vel = 0;
+          if (Math.abs(d) < .15) { a = tgt; tgt = null; draw(); return; }
+          a += d * .14;
+        }
+        draw(); raf = requestAnimationFrame(step);
+      };
+      var kick = function(){ if (!raf) raf = requestAnimationFrame(step); };
+      var goBy = function(k){ var base = tgt === null ? Math.round(a / th) * th : tgt; tgt = base - k * th; vel = 0; kick(); };
+      var goTo = function(i){ var cd = ((i - Math.round(-a / th)) % n + n) % n; if (cd > n / 2) cd -= n; goBy(cd); };
+      box.addEventListener("pointerdown", function(e){
+        if (e.target.closest(".c3n") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        down = true; pid = e.pointerId; lx = e.clientX; mv = 0; st = Date.now(); vel = 0; tgt = null; idle = Date.now();
+        var it = e.target.closest(".c3i"); hit = it ? items.indexOf(it) : -1; box.classList.add("grab");
+        try { box.setPointerCapture(pid); } catch (x) {}
+      });
+      box.addEventListener("pointermove", function(e){
+        if (!down || e.pointerId !== pid) return;
+        var dx = e.clientX - lx; lx = e.clientX; mv += Math.abs(dx);
+        if (dx) { vel = dx * .42; a += vel; draw(); }
+      });
+      var up = function(e){
+        if (!down || (e && e.pointerId !== pid)) return;
+        down = false; box.classList.remove("grab"); idle = Date.now();
+        if (mv < 6 && Date.now() - st < 450 && hit >= 0) { vel = 0; goTo(hit); } else kick();
+      };
+      box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+      box.addEventListener("keydown", function(e){ if (e.key === "ArrowLeft") { idle = Date.now(); goBy(-1); } else if (e.key === "ArrowRight") { idle = Date.now(); goBy(1); } });
+      g.querySelector(".c3n.p").addEventListener("click", function(){ idle = Date.now(); goBy(-1); });
+      g.querySelector(".c3n.x").addEventListener("click", function(){ idle = Date.now(); goBy(1); });
+      dots.forEach(function(d, i){ d.addEventListener("click", function(){ idle = Date.now(); goTo(i); }); });
+      addEventListener("resize", layout);
+      if ("IntersectionObserver" in window) new IntersectionObserver(function(en){ vis = en[0].isIntersecting; }, {threshold: .3}).observe(box);
+      if (!still) setInterval(function(){ if (vis && !down && Date.now() - idle > 5000) goBy(1); }, 3200);
+      layout();
+    })();
     ["r1", "r2"].forEach(function(c){ var r = document.createElement("i"); r.className = "ring3 " + c; ar.appendChild(r); });
     // gelembung transparan berbagai ukuran, 3 lapis kedalaman (kecil = jauh, besar = dekat); bergeser mengikuti sentuhan/kemiringan
     var rnd = function(a, b){ return a + Math.random() * (b - a); }, fx3 = null;
@@ -878,7 +1032,7 @@ onScroll();
       if (fx3) { fx3.style.setProperty("--mx", cx.toFixed(3)); fx3.style.setProperty("--my", cy.toFixed(3)); }
       requestAnimationFrame(loop);
     })(0);
-    document.querySelectorAll(".card").forEach(function(c){
+    document.querySelectorAll(".card:not(.sh3)").forEach(function(c){
       c.addEventListener("pointerenter", function(){ c.classList.add("rdy"); });
       c.addEventListener("pointermove", function(e){ var r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = "perspective(700px) rotateX(" + (-y * 14) + "deg) rotateY(" + (x * 14) + "deg) translateY(-4px)"; });
       c.addEventListener("pointerleave", function(){ c.style.transform = ""; });
@@ -963,6 +1117,7 @@ const PAL=[["#14706f","#072a2c"],["#a3506a","#3d1422"],["#2a4e8c","#0a1730"],["#
 const ST=["Baru","Menunggu DP","Dikerjakan","Selesai"];
 const SL=[["cover","Foto sampul"],["w","Foto mempelai wanita"],["p","Foto mempelai pria"],["gal","Foto galeri"],["end","Foto penutup"]];
 const cat=id=>CAT.find(c=>c.id===id);
+const fxId=c=>String((c&&c.id)||"").replace(/[^\w-]/g,"");
 const tl=(c,n)=>{const t=c&&c.th.find(x=>x.n===n);return t&&t.name?t.name:"Tema "+n};
 const slb=k=>(SL.find(s=>s[0]===k)||[0,k])[1];
 /* jenis acara non-wedding mengikuti judul tema */
@@ -1002,14 +1157,14 @@ function buildInv(o){var d=o.data||{},P=function(k){return(o.photos||[]).filter(
  ['CFG.bride.name = N[0]; CFG.bride.full = N[0] + " Putri"; CFG.groom.name = N[1]; CFG.groom.full = N[1] + " Putra";','CFG.date = "2027-03-06T08:00:00+07:00"; CFG.dateLabel = "06 . 03 . 2027";','CFG.events.forEach(function(e){e.day = "Sabtu, 06 Maret 2027"});'].forEach(function(x){h=h.split(x).join("")});
  var KT={wedding:"The Wedding of",ulangtahun:"Undangan Ulang Tahun",aqiqah:"Undangan Aqiqah",khitan:"Undangan Khitan",halal:"Undangan Halalbihalal",umum:"Undangan"},kk=cfg.kind||"wedding",nmx=kk==="wedding"?[cfg.bride.name,cfg.groom.name].filter(Boolean).join(" & "):cfg.bride.name,ttl=(KT[kk]||KT.umum)+" "+nmx,dsc="Undangan digital"+(cfg.dateLabel?" · "+cfg.dateLabel.split(" . ").join("/"):"");
  h=h.replace("<title>The Wedding of Shintia & Bhima</title>","<title>"+esc(ttl)+'</title><meta property="og:title" content="'+esc(ttl)+'"><meta property="og:description" content="'+esc(dsc)+'"><meta property="og:type" content="website">'+(cfg.photos.cover?'<meta property="og:image" content="'+esc(cfg.photos.cover)+'">':""));
- return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
+ return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__fx='"+fxId(cat(o.cat))+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
 const slug=o=>(([o.data&&(o.data.wn||o.data.wf),o.data&&(o.data.pn||o.data.pf)].filter(Boolean).join("-")||"undangan").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
 function saveFile(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ============ PREVIEW ============ */
 let pvN=null;
 function openPv(n){const c=cat(cur);pvN=n;$("#pvt").textContent=tl(c,n);$("#pvo").style.display=DEMO_URL?"":"none";$("#pvo").href=DEMO_URL+"#tema-"+n;
- $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__demo=1;window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(c.ph||[]).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
+ $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__demo=1;window.__fx='"+fxId(c)+"';window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(c.ph||[]).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
 function closePv(){$("#pv").hidden=true;$("#pvf").srcdoc="";document.body.style.overflow=""}
 addEventListener("keydown",e=>{if(e.key==="Escape")closePv()});
 
