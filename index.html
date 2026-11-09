@@ -167,6 +167,18 @@ details.fq p{margin-top:10px;color:var(--mu);font-size:.9rem}
 .upl:hover{border-color:var(--ac)}.upl input{display:none}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 .stats .card{margin:0;padding:16px}.stats b{display:block;font:800 1.6rem var(--fh)}
+.ce[hidden],textarea[hidden]{display:none!important}
+details.sub{border:1px solid var(--ln);border-radius:18px;padding:14px 16px;margin-top:12px;background:var(--card)}
+details.sub>summary{font:800 .98rem var(--fh);color:var(--ink);cursor:pointer}
+details.sub[open]>summary{margin-bottom:6px}
+.tr{display:grid;grid-template-columns:70px 1fr 42px;gap:8px;padding:12px;border:1px solid var(--ln);border-radius:16px;background:var(--in);margin-top:10px;align-items:center}
+.tr input{margin:0}.tr [data-tf=u],.tr .timg{grid-column:1/-1}
+.tr>button{padding:8px;min-width:0}
+.timg{display:flex;align-items:center;gap:10px}.timg img{width:44px;height:58px;object-fit:cover;border-radius:8px}.timg i{font-size:.76rem;color:var(--mu);font-style:normal}
+.upl.mini{margin:0;padding:8px 12px;font-size:.76rem;border-radius:12px;width:auto}
+.savebar{position:sticky;bottom:86px;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;margin:18px 0 90px;border-radius:18px;background:var(--card);border:1px solid var(--ln);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 24px -14px rgba(0,0,0,.4)}
+.dock.adm button{padding:10px 13px;white-space:nowrap;font-size:.8rem;gap:5px}
+body.isadm #wa{display:none}
 .chipset{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .chipset button{background:var(--in);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);padding:7px 14px;font-size:.78rem}
 .chipset button.on{background:var(--grad);color:#fff}
@@ -374,10 +386,13 @@ html.js.k3d [data-a].in{transform:none;filter:none}
 html.k3d .card.rdy{transition:transform .15s ease-out,box-shadow .35s;transition-delay:0s}
 html.k3d #cover{perspective:1400px}
 html.k3d #cover::before,html.k3d #cover::after{backface-visibility:hidden;transition:transform 1.4s cubic-bezier(.65,0,.25,1),filter 1.4s ease}
-html.k3d #cover::before{transform-origin:left center;box-shadow:inset -3px 0 0 rgba(232,207,143,.55)}
-html.k3d #cover::after{transform-origin:right center;box-shadow:inset 3px 0 0 rgba(232,207,143,.55)}
-html.k3d #cover.open::before{transform:rotateY(104deg);filter:brightness(.3)}
-html.k3d #cover.open::after{transform:rotateY(-104deg);filter:brightness(.3)}
+html.k3d #cover::before{transform-origin:left center}
+html.k3d #cover::after{transform-origin:right center}
+/* pintu tertutup: warna & motif menyambung di tengah (tanpa garis); tepi emas hanya muncul saat pintu terbuka */
+html.k3d #cover:not(.bgimg)::before,html.k3d #cover:not(.bgimg)::after{background-size:84px 144px,100vw 100%}
+html.k3d #cover:not(.bgimg)::after{background-position:-49.5vw 0,-49.5vw 0}
+html.k3d #cover.open::before{transform:rotateY(104deg);filter:brightness(.3);box-shadow:inset -3px 0 0 rgba(232,207,143,.55)}
+html.k3d #cover.open::after{transform:rotateY(-104deg);filter:brightness(.3);box-shadow:inset 3px 0 0 rgba(232,207,143,.55)}
 html.k3d #cover:not(.open) .cin{transform:rotateX(var(--crx,0deg)) rotateY(var(--cry,0deg));transition:opacity .6s}
 html.k3d #cover.open .cin{transform:translateZ(320px);opacity:0}
 html.k3d .hero{perspective:1000px}
@@ -395,6 +410,46 @@ html.k3d.opened .hero>:not(.tw):not(#arch):not(.shim){animation:flyin 1.2s cubic
 html.k3d.opened .hero>.shim{animation:shim 5s linear infinite,flyin 1.2s cubic-bezier(.2,.8,.2,1) .6s both}
 @keyframes archin{from{opacity:0;translate:0 0 -520px;rotate:y -75deg}}
 @keyframes flyin{from{opacity:0;transform:translateZ(-320px) rotateX(28deg)}}
+/* 3D Motion: foto mempelai bisa di-spin (geser / ketuk) */
+html.k3d .circ{perspective:800px;cursor:grab;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html.k3d .circ.grab{cursor:grabbing}
+.sp3{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.sp3>[data-img],.sp3b{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;border:3px solid var(--surface);overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 14px 26px -12px rgba(0,0,0,.45)}
+.sp3b{transform:rotateY(180deg)}
+.sp3 img{-webkit-user-drag:none;pointer-events:none}
+/* 3D Motion: kartu acara bisa dibalik & galeri carousel 3D */
+html.k3d .card.sh3{background:none;border:0;box-shadow:none;padding:0;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.k3d .card.sh3::before{display:none}
+.fl3{perspective:1100px;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
+.fl3i{display:grid;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.4,.15,.2,1)}
+.fl3.on .fl3i{transform:rotateY(180deg)}
+.fc{grid-area:1/1;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:36px 22px;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 16px 30px -16px rgba(0,0,0,.4)}
+.fc::before{content:"";position:absolute;inset:7px;border:1px solid var(--gold);opacity:.4;border-radius:12px;pointer-events:none}
+.fc.bk{transform:rotateY(180deg);pointer-events:none}
+.fl3.on .fc.bk{pointer-events:auto}.fl3.on .fc.ft{pointer-events:none}
+.fc .hint{display:block;margin-top:18px;font:400 .78rem var(--sans);color:var(--muted);letter-spacing:.04em}
+.c3w{text-align:center}
+.c3{position:relative;height:calc(var(--ch,260px) + 40px);perspective:1100px;touch-action:pan-y;cursor:grab;-webkit-user-select:none;user-select:none;outline:0;-webkit-tap-highlight-color:transparent}
+.c3.grab{cursor:grabbing}
+.c3s{position:absolute;left:50%;top:14px;width:var(--cw,200px);height:var(--ch,260px);margin-left:calc(var(--cw,200px) / -2);transform-style:preserve-3d}
+.c3i{position:absolute;inset:0;border-radius:14px;overflow:hidden;background:var(--line);border:2px solid var(--surface);-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 18px 30px -14px rgba(0,0,0,.5)}
+.c3i img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+.c3i .ph{height:100%;aspect-ratio:auto}
+.c3n{position:absolute;top:calc(14px + var(--ch,260px) / 2 - 19px);z-index:5;width:38px;height:38px;min-width:0;min-height:0;padding:0;border-radius:50%;border:1px solid var(--gold);background:var(--surface);color:var(--accent);font:400 1.5rem/1 var(--sans);display:grid;place-items:center;box-shadow:0 6px 14px -6px rgba(0,0,0,.4)}
+.c3n.p{left:2px}.c3n.x{right:2px}
+.c3d{display:flex;justify-content:center;gap:10px;margin-top:6px}
+.c3d button{width:10px;height:10px;min-width:0;min-height:0;padding:0;border:0;border-radius:50%;background:var(--line);box-shadow:none;transition:transform .3s,background .3s}
+.c3d button.on{background:var(--gold);transform:scale(1.35)}
+/* Classic & Floral: bingkai foto khas (tidak bulat) */
+html.cf .arch{aspect-ratio:3/4;border-radius:6px;border:3px solid #e0c27a;margin:36px auto 24px}
+html.cf .arch::before{inset:-14px;border:1px solid rgba(232,207,143,.8);border-radius:0;animation:none}
+html.cf .arch::after{content:"";position:absolute;inset:-21px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 0L14 7L7 14L0 7Z' fill='%23e0c27a'/%3E%3C/svg%3E") 0 0/14px 14px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 0L14 7L7 14L0 7Z' fill='%23e0c27a'/%3E%3C/svg%3E") 100% 0/14px 14px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 0L14 7L7 14L0 7Z' fill='%23e0c27a'/%3E%3C/svg%3E") 0 100%/14px 14px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cpath d='M7 0L14 7L7 14L0 7Z' fill='%23e0c27a'/%3E%3C/svg%3E") 100% 100%/14px 14px no-repeat}
+html.cf .arch:not(#arch){aspect-ratio:4/5;border-radius:96px 10px 96px 10px}
+html.cf .arch:not(#arch)::before{inset:-12px;border-radius:108px 20px 108px 20px}
+html.cf .arch:not(#arch)::after{display:none}
+html.cf .circ{width:150px;height:190px;border-radius:64px 8px 64px 8px}
+html.cf .circ::before{inset:-9px;border:1px solid var(--gold);border-radius:73px 17px 73px 17px;animation:none}
+html.cf .circ>[data-img]{border-radius:inherit}
 /* responsif: layar lebar & layar kecil */
 html{overflow-x:hidden}
 #couple>h2{font-size:clamp(1.4rem,7.6vw,2.6rem)!important;overflow-wrap:anywhere}
@@ -565,6 +620,15 @@ html.js.sp .story:not(.lit){opacity:.6}
 /* simpul penutup */
 .spknot{display:block;width:240px;height:150px;margin:52px auto 0;overflow:visible}
 .spknot path{fill:none;stroke-linecap:round}
+/* tema 32 selaras dengan Spesial Design (Benang Emas) */
+html.t32 .spm0{width:150px;margin-bottom:26px}
+html.t32 .spm0 ellipse,html.t32 .spm0 text{stroke:#8f6a16}
+html.t32 .spm0 text{fill:#8f6a16}
+html.t32 .spc{background:#a8832a}
+html.t32 .spseam{background:#fff;box-shadow:0 0 36px 8px rgba(255,255,255,.9)}
+html.t32 #sptip{background:#a8832a;box-shadow:0 0 12px 4px rgba(168,131,42,.55)}
+html.t32 .sph::before{background:#d9bf78}
+html.t32.sp .arch{border-radius:999px 999px 22px 22px}
 .spknot .t{stroke:var(--gold);stroke-opacity:.2;stroke-width:1.4}
 .spknot .d{stroke:var(--gold);stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
 .spknot text{font:400 44px Italiana,"Cormorant Garamond",serif;fill:var(--gold);text-anchor:middle;opacity:0;transition:opacity 1s}
@@ -895,7 +959,11 @@ onScroll();
 (function(){
   var m = /^#tema-(\d+)/.exec(window.__t||location.hash); if (!m) return;
   var n = +m[1];
-  if (n >= 7 && n <= 12) {
+  // Daftar nomor tema per kategori efek (cadangan bila dibuka lewat #tema-NN tanpa katalog). Tambah nomor tema baru di sini.
+  var FX_TEMA = {"3d": [1, 2, 3, 4, 5, 6], "env": [7, 8, 9, 10, 11, 12], "cf": [21, 22, 23, 24, 25, 26]};
+  var fx = window.__fx || ""; if (!fx) for (var k in FX_TEMA) { if (FX_TEMA[k].indexOf(n) >= 0) fx = k; }
+  if (fx === "cf") document.documentElement.classList.add("cf");
+  if (fx === "env") {
     var p0 = document.querySelector(".cin>p"), w = document.createElement("div");
     p0.replaceWith(w); w.appendChild(p0); p0.classList.add("ptop");
     w.insertAdjacentHTML("beforeend", '<div class="envb"><div class="bd"></div><div class="lt script">' + esc(both) + '<small>Undangan Pernikahan</small></div><div class="fr"></div><div class="fp"></div><div class="sl">♥</div></div>');
@@ -906,9 +974,130 @@ onScroll();
       setTimeout(go, 2300);
     };
   }
-  if (n >= 1 && n <= 6) {
+  if (fx === "3d") {
     var root = document.documentElement, cv = $("cover"), ar = $("arch");
     root.classList.add("k3d");
+    // foto mempelai bisa diputar: geser kiri/kanan, lempar agar berputar, ketuk untuk sekali putar
+    [].slice.call(document.querySelectorAll(".circ")).forEach(function(c){
+      var f = c.querySelector("[data-img]"); if (!f) return;
+      var w = document.createElement("div"), bk = document.createElement("div");
+      w.className = "sp3"; bk.className = "sp3b"; bk.innerHTML = f.innerHTML;
+      if ("MutationObserver" in window) new MutationObserver(function(){ bk.innerHTML = f.innerHTML; }).observe(f, {childList: true}); // sisi belakang selalu sama dengan depan
+      c.insertBefore(w, f); w.appendChild(f); w.appendChild(bk);
+      var ang = 0, vel = 0, down = false, lx = 0, sx = 0, st = 0, mv = 0, raf = 0, pid = null;
+      var set = function(a){ ang = a; w.style.transform = "rotateY(" + a.toFixed(2) + "deg)"; };
+      var loop = function(){
+        raf = 0; if (down) return;
+        if (Math.abs(vel) > 1.2) { set(ang + vel); vel *= .955; }
+        else { var t = Math.round(ang / 180) * 180, d = t - ang; vel = 0; if (Math.abs(d) < .4) { set(t); return; } set(ang + d * .18); }
+        raf = requestAnimationFrame(loop);
+      };
+      var go = function(){ if (!raf) raf = requestAnimationFrame(loop); };
+      c.addEventListener("pointerdown", function(e){
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        down = true; pid = e.pointerId; lx = sx = e.clientX; st = Date.now(); mv = 0; vel = 0; c.classList.add("grab");
+        try { c.setPointerCapture(pid); } catch (x) {}
+      });
+      c.addEventListener("pointermove", function(e){
+        if (!down || e.pointerId !== pid) return;
+        var dx = e.clientX - lx; lx = e.clientX; mv += Math.abs(dx);
+        if (dx) { vel = dx * 1.1; set(ang + vel); }
+      });
+      var end = function(e){
+        if (!down || (e && e.pointerId !== pid)) return;
+        down = false; c.classList.remove("grab");
+        if (mv < 6 && Date.now() - st < 400) vel = still ? 0 : (Math.random() < .5 ? 24 : -24); // ketuk = satu putaran
+        if (still) { vel = 0; }
+        go();
+      };
+      c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end);
+      c.addEventListener("dragstart", function(e){ e.preventDefault(); });
+      // petunjuk: putar sekali saat pertama kali terlihat
+      if (!still && "IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function(en){
+          if (en[0].isIntersecting) { io.disconnect(); setTimeout(function(){ if (!down && !vel && !raf) { vel = 20; go(); } }, 700); }
+        }, {threshold: .7});
+        io.observe(c);
+      }
+    });
+    // kartu acara: ketuk untuk dibalik (depan: waktu & tempat, belakang: alamat & peta)
+    [].slice.call(document.querySelectorAll("#events>.card")).forEach(function(c, i){
+      var e = CFG.events[i]; if (!e) return;
+      c.classList.add("sh3");
+      c.innerHTML = '<div class="fl3" role="button" tabindex="0" aria-pressed="false"><div class="fl3i">'
+        + '<div class="fc ft"><h3 class="script shim">' + esc(e.title) + '</h3><p class="day">' + esc(e.day) + '</p><p class="time sans">Pukul ' + esc(e.time) + '</p><p>' + esc(e.place) + '</p><span class="hint">Ketuk untuk lihat lokasi ↻</span></div>'
+        + '<div class="fc bk"><h3 class="script" style="font-size:2.1rem">' + esc(e.title) + '</h3><p>' + esc(e.place) + '</p><p class="small">' + esc(e.addr) + '</p>'
+        + (e.map ? '<a class="btn alt" href="' + esc(e.map) + '" target="_blank" rel="noopener">Buka Google Maps</a>' : '') + '<span class="hint">↻ Ketuk untuk kembali</span></div>'
+        + '</div></div>';
+      var fl = c.firstChild, tg = function(){ fl.setAttribute("aria-pressed", fl.classList.toggle("on")); };
+      fl.addEventListener("click", function(ev){ if (ev.target.closest("a")) return; tg(); });
+      fl.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); tg(); } });
+    });
+    // galeri: carousel 3D (geser, panah, titik; berputar pelan sendiri saat terlihat)
+    (function(){
+      var g = $("gal"); if (!g) return;
+      var src = [].slice.call(g.children).map(function(d){ return d.innerHTML; }), n = src.length;
+      if (n < 3) return;
+      g.className = "c3w";
+      g.innerHTML = '<div class="c3" tabindex="0" role="region" aria-label="Galeri foto"><div class="c3s">' + src.map(function(h){ return '<div class="c3i">' + h + '</div>'; }).join("")
+        + '</div><button type="button" class="c3n p" aria-label="Sebelumnya">‹</button><button type="button" class="c3n x" aria-label="Berikutnya">›</button></div>'
+        + '<div class="c3d">' + src.map(function(h, i){ return '<button type="button" aria-label="Foto ' + (i + 1) + '"></button>'; }).join("") + '</div>'
+        + '<p class="small" style="margin-top:12px">Geser atau ketuk foto untuk memutar galeri</p>';
+      var box = g.querySelector(".c3"), stage = g.querySelector(".c3s"), items = [].slice.call(g.querySelectorAll(".c3i")), dots = [].slice.call(g.querySelectorAll(".c3d button"));
+      var th = 360 / n, R = 0, a = 0, vel = 0, tgt = null, raf = 0, down = false, pid = null, lx = 0, mv = 0, st = 0, hit = -1, idle = 0, vis = false;
+      var draw = function(){
+        stage.style.transform = "translateZ(" + (-R) + "px) rotateY(" + a.toFixed(2) + "deg)";
+        var k = ((Math.round(-a / th) % n) + n) % n;
+        items.forEach(function(el, i){ var r = ((i * th + a) % 360 + 540) % 360 - 180; el.style.opacity = Math.max(.3, 1 - Math.abs(r) / 120).toFixed(2); });
+        dots.forEach(function(d, i){ d.classList.toggle("on", i === k); });
+      };
+      var layout = function(){
+        var W = box.clientWidth || 320, cw = Math.max(130, Math.min(230, W * .56)), ch = Math.round(cw * 1.3);
+        box.style.setProperty("--cw", cw + "px"); box.style.setProperty("--ch", ch + "px");
+        R = Math.round(cw / 2 / Math.tan(Math.PI / n) + 14);
+        items.forEach(function(el, i){ el.style.transform = "rotateY(" + (i * th) + "deg) translateZ(" + R + "px)"; });
+        draw();
+      };
+      var step = function(){
+        raf = 0; if (down) return;
+        if (tgt === null && Math.abs(vel) > .3) { a += vel; vel *= .94; }
+        else {
+          if (tgt === null) tgt = Math.round(a / th) * th;
+          var d = tgt - a; vel = 0;
+          if (Math.abs(d) < .15) { a = tgt; tgt = null; draw(); return; }
+          a += d * .14;
+        }
+        draw(); raf = requestAnimationFrame(step);
+      };
+      var kick = function(){ if (!raf) raf = requestAnimationFrame(step); };
+      var goBy = function(k){ var base = tgt === null ? Math.round(a / th) * th : tgt; tgt = base - k * th; vel = 0; kick(); };
+      var goTo = function(i){ var cd = ((i - Math.round(-a / th)) % n + n) % n; if (cd > n / 2) cd -= n; goBy(cd); };
+      box.addEventListener("pointerdown", function(e){
+        if (e.target.closest(".c3n") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        down = true; pid = e.pointerId; lx = e.clientX; mv = 0; st = Date.now(); vel = 0; tgt = null; idle = Date.now();
+        var it = e.target.closest(".c3i"); hit = it ? items.indexOf(it) : -1; box.classList.add("grab");
+        try { box.setPointerCapture(pid); } catch (x) {}
+      });
+      box.addEventListener("pointermove", function(e){
+        if (!down || e.pointerId !== pid) return;
+        var dx = e.clientX - lx; lx = e.clientX; mv += Math.abs(dx);
+        if (dx) { vel = dx * .42; a += vel; draw(); }
+      });
+      var up = function(e){
+        if (!down || (e && e.pointerId !== pid)) return;
+        down = false; box.classList.remove("grab"); idle = Date.now();
+        if (mv < 6 && Date.now() - st < 450 && hit >= 0) { vel = 0; goTo(hit); } else kick();
+      };
+      box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+      box.addEventListener("keydown", function(e){ if (e.key === "ArrowLeft") { idle = Date.now(); goBy(-1); } else if (e.key === "ArrowRight") { idle = Date.now(); goBy(1); } });
+      g.querySelector(".c3n.p").addEventListener("click", function(){ idle = Date.now(); goBy(-1); });
+      g.querySelector(".c3n.x").addEventListener("click", function(){ idle = Date.now(); goBy(1); });
+      dots.forEach(function(d, i){ d.addEventListener("click", function(){ idle = Date.now(); goTo(i); }); });
+      addEventListener("resize", layout);
+      if ("IntersectionObserver" in window) new IntersectionObserver(function(en){ vis = en[0].isIntersecting; }, {threshold: .3}).observe(box);
+      if (!still) setInterval(function(){ if (vis && !down && Date.now() - idle > 5000) goBy(1); }, 3200);
+      layout();
+    })();
     ["r1", "r2"].forEach(function(c){ var r = document.createElement("i"); r.className = "ring3 " + c; ar.appendChild(r); });
     // gelembung transparan berbagai ukuran, 3 lapis kedalaman (kecil = jauh, besar = dekat); bergeser mengikuti sentuhan/kemiringan
     var rnd = function(a, b){ return a + Math.random() * (b - a); }, fx3 = null;
@@ -963,7 +1152,7 @@ onScroll();
       if (fx3) { fx3.style.setProperty("--mx", cx.toFixed(3)); fx3.style.setProperty("--my", cy.toFixed(3)); }
       requestAnimationFrame(loop);
     })(0);
-    document.querySelectorAll(".card").forEach(function(c){
+    document.querySelectorAll(".card:not(.sh3)").forEach(function(c){
       c.addEventListener("pointerenter", function(){ c.classList.add("rdy"); });
       c.addEventListener("pointermove", function(e){ var r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = "perspective(700px) rotateX(" + (-y * 14) + "deg) rotateY(" + (x * 14) + "deg) translateY(-4px)"; });
       c.addEventListener("pointerleave", function(){ c.style.transform = ""; });
@@ -1017,7 +1206,8 @@ onScroll();
 
   // ===== sampul: monogram, benang turun, cahaya membelah =====
   var cover = $("cover"), cin = Q(".cin"), i1 = (CFG.bride.name || "S").charAt(0).toUpperCase(), i2 = KD ? "" : (CFG.groom.name || "B").charAt(0).toUpperCase();
-  if (n !== 32) cin.insertAdjacentHTML("afterbegin", '<svg class="spm0" viewBox="0 0 220 210" aria-hidden="true">' + (KD
+  (function(m0){ if (m0) m0.remove(); })(cin.querySelector(".mono32")); // tema 32 memakai monogram bertinta yang sama
+  cin.insertAdjacentHTML("afterbegin", '<svg class="spm0" viewBox="0 0 220 210" aria-hidden="true">' + (KD
     ? '<ellipse pathLength="1" cx="110" cy="105" rx="82" ry="94"/><text x="110" y="146" text-anchor="middle">' + esc(i1) + '</text>'
     : '<ellipse pathLength="1" cx="82" cy="92" rx="70" ry="84"/><ellipse pathLength="1" cx="138" cy="118" rx="70" ry="84"/><text x="70" y="118">' + esc(i1) + '</text><text x="112" y="170">' + esc(i2) + '</text>') + '</svg>');
   var cth = document.createElement("div"), seam = document.createElement("div");
@@ -1260,13 +1450,56 @@ onScroll();
 })();
 (function(){var B=window.__bg;if(!B)return;["cover","home","verse","couple","countdown","event","story","gallery","rsvp","gift","wishes","thanks"].forEach(function(id,i){var u=B[i]||B["*"],e=document.getElementById(id);if(!u||!e||!/^(https?:\/\/|data:image\/)/.test(u))return;e.classList.add("bgimg");e.style.setProperty("--bgimg",'url("'+String(u).replace(/"/g,"%22")+'")')})})();
 <\/script>
+<script>
+(function(){
+  if (!window.__demo || !window.__adm) return; // hanya admin yang login
+  var on = false, st = document.createElement("style");
+  st.textContent = "#edt3{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2147483000;display:flex;gap:8px;align-items:flex-end;font:600 .78rem/1.3 system-ui,sans-serif}#edt3 button{all:unset;cursor:pointer;padding:10px 14px;border-radius:999px;background:#1f1a1c;color:#fff;box-shadow:0 8px 18px -8px rgba(0,0,0,.6)}#edt3 span{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.96);color:#1f1a1c;box-shadow:0 6px 14px -8px rgba(0,0,0,.5);max-width:190px;font-weight:500}html.edit3 [data-e3]{outline:1px dashed rgba(224,194,122,.95);outline-offset:2px;cursor:text;-webkit-user-select:text;user-select:text}html.edit3 [data-e3]:focus{outline:2px solid #e0c27a;background:rgba(255,248,225,.25)}";
+  document.head.appendChild(st);
+  var bar = document.createElement("div"); bar.id = "edt3";
+  bar.innerHTML = '<button type="button">\u270E Edit tulisan</button><span hidden>Ketuk tulisan untuk mengubahnya. Hanya contoh, tidak disimpan.</span>';
+  document.body.appendChild(bar);
+  var btn = bar.firstChild, tip = bar.lastChild, tm = 0, SKIP = /^(SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION|NOSCRIPT|IFRAME|SVG|PATH)$/i;
+  function cands(){
+    var out = [], w = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, null), el;
+    while ((el = w.nextNode())) {
+      if (SKIP.test(el.tagName) || el.closest("#edt3,svg,.ph,#count b")) continue;
+      for (var n = el.firstChild; n; n = n.nextSibling) { if (n.nodeType === 3 && n.nodeValue.trim()) { out.push(el); break; } }
+    }
+    return out;
+  }
+  function set(v){
+    on = v; document.documentElement.classList.toggle("edit3", on);
+    if (on) { cands().forEach(function(el){ el.setAttribute("contenteditable", "true"); el.setAttribute("data-e3", "1"); el.spellcheck = false; }); }
+    else { [].slice.call(document.querySelectorAll("[data-e3]")).forEach(function(el){ el.removeAttribute("contenteditable"); el.removeAttribute("data-e3"); }); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+    btn.textContent = on ? "\u2713 Selesai edit" : "\u270E Edit tulisan";
+    tip.hidden = !on; clearTimeout(tm); if (on) tm = setTimeout(function(){ tip.hidden = true; }, 5000);
+  }
+  btn.addEventListener("click", function(e){ e.stopPropagation(); set(!on); });
+  document.addEventListener("click", function(e){
+    if (!on || !e.target.closest) return;
+    if (e.target.closest("[data-e3]")) { e.stopPropagation(); if (e.target.closest("a,button,summary,label")) e.preventDefault(); }
+  }, true);
+  document.addEventListener("keydown", function(e){
+    if (!on || !e.target || !e.target.getAttribute || !e.target.getAttribute("data-e3")) return;
+    e.stopPropagation();
+    if (e.key === "Enter") { e.preventDefault(); e.target.blur(); }
+    else if (e.key === " " && /^(BUTTON|A|SUMMARY)$/.test(e.target.tagName)) { e.preventDefault(); document.execCommand("insertText", false, " "); }
+  }, true);
+  document.addEventListener("paste", function(e){
+    if (!on || !e.target.closest || !e.target.closest("[data-e3]")) return;
+    e.preventDefault(); var t = (e.clipboardData || window.clipboardData).getData("text/plain") || "";
+    document.execCommand("insertText", false, t.replace(/\s*\n\s*/g, " "));
+  }, true);
+})();
+<\/script>
 </body>
 </html>
 </script>
 <script>
 /* ============ KONFIGURASI (edit di sini) ============ */
 const API_URL = "https://script.google.com/macros/s/AKfycbz48sjVl2fPgYXF3LwZeVdhv92l-p3MeSa9bdvJFiPGxLdYKLvVUHYguy0m-e4cFcpt/exec"; // https://script.google.com/macros/s/XXXX/exec
-const WA_ADMIN = "6281234567890";                          // nomor WhatsApp admin (tanpa +)
+const WA_ADMIN = "6282139932041";                          // nomor WhatsApp admin (tanpa +)
 const DEMO_URL = "";                                       // opsional: link demo untuk "Tab baru" pada preview
 /* ===================================================== */
 
@@ -1310,6 +1543,7 @@ const PAL=[["#14706f","#072a2c"],["#a3506a","#3d1422"],["#2a4e8c","#0a1730"],["#
 const ST=["Baru","Menunggu DP","Dikerjakan","Selesai"];
 const SL=[["cover","Foto sampul"],["w","Foto mempelai wanita"],["p","Foto mempelai pria"],["gal","Foto galeri"],["end","Foto penutup"]];
 const cat=id=>CAT.find(c=>c.id===id);
+const fxId=c=>String((c&&c.id)||"").replace(/[^\w-]/g,"");
 const tl=(c,n)=>{const t=c&&c.th.find(x=>x.n===n);return t&&t.name?t.name:"Tema "+n};
 const slb=k=>(SL.find(s=>s[0]===k)||[0,k])[1];
 /* jenis acara non-wedding mengikuti judul tema */
@@ -1350,14 +1584,14 @@ function buildInv(o){var d=o.data||{},P=function(k){return(o.photos||[]).filter(
  ['CFG.bride.name = N[0]; CFG.bride.full = N[0] + " Putri"; CFG.groom.name = N[1]; CFG.groom.full = N[1] + " Putra";','CFG.date = "2027-03-06T08:00:00+07:00"; CFG.dateLabel = "06 . 03 . 2027";','CFG.events.forEach(function(e){e.day = "Sabtu, 06 Maret 2027"});'].forEach(function(x){h=h.split(x).join("")});
  var KT={wedding:"The Wedding of",ulangtahun:"Undangan Ulang Tahun",aqiqah:"Undangan Aqiqah",khitan:"Undangan Khitan",halal:"Undangan Halalbihalal",umum:"Undangan"},kk=cfg.kind||"wedding",nmx=kk==="wedding"?[cfg.bride.name,cfg.groom.name].filter(Boolean).join(" & "):cfg.bride.name,ttl=(KT[kk]||KT.umum)+" "+nmx,dsc="Undangan digital"+(cfg.dateLabel?" · "+cfg.dateLabel.split(" . ").join("/"):"");
  h=h.replace("<title>The Wedding of Shintia & Bhima</title>","<title>"+esc(ttl)+'</title><meta property="og:title" content="'+esc(ttl)+'"><meta property="og:description" content="'+esc(dsc)+'"><meta property="og:type" content="website">'+(cfg.photos.cover?'<meta property="og:image" content="'+esc(cfg.photos.cover)+'">':""));
- return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__sp="+(o.cat==="sp"?1:0)+";"+wishCfg(o)+"window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
+ return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__sp="+(o.cat==="sp"?1:0)+";"+wishCfg(o)+"window.__fx='"+fxId(cat(o.cat))+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
 const slug=o=>(([o.data&&(o.data.wn||o.data.wf),o.data&&(o.data.pn||o.data.pf)].filter(Boolean).join("-")||"undangan").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
 function saveFile(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ============ PREVIEW ============ */
 let pvN=null;
 function openPv(n){const c=cat(cur);pvN=n;$("#pvt").textContent=tl(c,n);$("#pvo").style.display=DEMO_URL?"":"none";$("#pvo").href=DEMO_URL+"#tema-"+n;
- $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__sp="+(c.id==="sp"?1:0)+";window.__demo=1;window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(c.ph||[]).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
+ $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__sp="+(c.id==="sp"?1:0)+";window.__demo=1;"+(admin?"window.__adm=1;":"")+"window.__fx='"+fxId(c)+"';window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(c.ph||[]).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
 function closePv(){$("#pv").hidden=true;$("#pvf").srcdoc="";document.body.style.overflow=""}
 addEventListener("keydown",e=>{if(e.key==="Escape")closePv()});
 
@@ -1430,10 +1664,25 @@ function vTamu(){
  <div class="sec2">Tamu (${G.length} · terkirim ${n})</div>${G.length?G.map((g,i)=>`<div class="card"><div class="row between"><b>${esc(g.n)}</b>${g.s?'<span class="badge b3">Terkirim</span>':""}</div><p class="sm mu" style="margin:2px 0 12px">${g.w?"+"+esc(g.w):"Tanpa nomor WA (pilih kontak saat kirim)"}</p><div class="row"><button class="ghost sm" data-act="gc" data-i="${i}">Salin link</button><button class="sm" data-act="gw" data-i="${i}">Kirim WhatsApp</button><button class="danger sm" data-act="gd" data-i="${i}">Hapus</button></div></div>`).join(""):'<p class="mu c">Belum ada tamu.</p>'}`}
 
 /* ============ VIEW: ADMIN ============ */
-function vCatEd(){
- const L=edc||(edc=JSON.parse(JSON.stringify(CAT)));
- return`<details class="card"><summary>Kelola katalog &amp; harga</summary><div class="card" data-hc="1" style="margin-top:14px"><b>Gambar 3 HP di beranda</b><p class="mu sm" style="margin-top:4px">Kiri, tengah, kanan. Kosongkan untuk tampilan bawaan.</p>${[0,1,2].map(i=>`<label>${["HP kiri","HP tengah","HP kanan"][i]}<input data-hero="${i}" value="${esc(HERO[i]||"")}" placeholder="Link gambar"></label><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="hero" data-hi="${i}">＋ Unggah gambar</label>`).join("")}</div>${L.map((c,i)=>{const th=(c.th||[]).map(x=>[x.n,x.name||"",x.u||"",x.img||""].join(" | ").replace(/( \| )+$/,"")).join("\n");
- return`<div class="card" data-cc="1" style="margin-top:14px"><input type="hidden" data-cf="id" value="${esc(c.id)}"><label>Nama kategori<input data-cf="n" value="${esc(c.n)}"></label><div class="g2"><label>Nama paket<input data-cf="pn" value="${esc(c.pn)}"></label><label>Harga (Rp)<input data-cf="p" type="number" value="${esc(c.p)}"></label></div><label>Fasilitas galeri<input data-cf="g" value="${esc(c.g)}"></label><label><input data-cf="nw" type="checkbox"${c.nw?" checked":""}>Non wedding (tanpa data mempelai)</label><label>Tema, satu per baris: nomor | nama | link preview | link gambar kartu<textarea data-cf="th" rows="5">${esc(th)}</textarea></label><label>Foto contoh preview, satu link per baris: sampul, mempelai wanita, mempelai pria, penutup, lalu galeri (baris kosong = foto bawaan)<textarea data-cf="ph" rows="5">${esc((c.ph||[]).join("\n"))}</textarea></label><div class="g2" style="margin-top:10px"><label>No. tema untuk gambar kartu<input data-cn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label class="upl" style="margin:22px 0 0;padding:12px"><input type="file" accept="image/*" data-aup="card">＋ Unggah gambar kartu</label></div><div class="g2"><label>Posisi foto contoh<select data-ps><option value="0">Sampul</option><option value="1">Mempelai wanita</option><option value="2">Mempelai pria</option><option value="3">Penutup</option><option value="g">Tambah ke galeri</option></select></label><label class="upl" style="margin:22px 0 0;padding:12px"><input type="file" accept="image/*" data-aup="ph">＋ Unggah foto contoh</label></div><label>Latar panel per tema, satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label><p style="margin-top:10px"><button class="danger sm" data-act="cdel" data-i="${i}">Hapus kategori</button></p></div>`}).join("")}<div class="row" style="margin-top:12px"><button class="ghost" data-act="cadd">+ Kategori baru</button><button data-act="csave">Simpan katalog</button></div></details>`}
+function thRow(x){return`<div class="tr" data-tr><input class="tn" data-tf="n" type="number" inputmode="numeric" placeholder="No" aria-label="Nomor tema" value="${esc(x.n||"")}"><input data-tf="name" placeholder="Nama tema (opsional)" aria-label="Nama tema" value="${esc(x.name||"")}"><button type="button" class="danger sm" data-act="trdel" aria-label="Hapus tema">✕</button><input data-tf="u" placeholder="Link preview khusus (opsional)" aria-label="Link preview" value="${esc(x.u||"")}"><input data-tf="img" type="hidden" value="${esc(x.img||"")}"><div class="timg">${x.img?`<img src="${esc(x.img)}" alt="" loading="lazy">`:"<i>Belum ada gambar kartu</i>"}<label class="upl mini"><input type="file" accept="image/*" data-aup="card">＋ Gambar kartu</label></div></div>`}
+function thSync(box){const ta=box.querySelector('[data-cf="th"]');if(!ta)return;const rows=[...box.querySelectorAll("[data-tr]")];ta.value=rows.map(r=>{const g=k=>(r.querySelector('[data-tf="'+k+'"]').value||"").trim();return[g("n"),g("name"),g("u"),g("img")].join(" | ").replace(/( \| )+$/,"")}).join("\n");const c=box.querySelector("[data-tcount]");if(c)c.textContent=rows.length}
+function catEd(c,i){const th=(c.th||[]).map(x=>[x.n,x.name||"",x.u||"",x.img||""].join(" | ").replace(/( \| )+$/,"")).join("\n");
+ return`<section class="ce" data-cc="1" data-cid="${esc(c.id)}"${c.id===ccur?"":" hidden"}><input type="hidden" data-cf="id" value="${esc(c.id)}">
+ <details class="sub" open><summary>Paket &amp; harga</summary><label>Nama kategori<input data-cf="n" value="${esc(c.n)}"></label><div class="g2"><label>Nama paket<input data-cf="pn" value="${esc(c.pn)}"></label><label>Harga (Rp)<input data-cf="p" type="number" inputmode="numeric" value="${esc(c.p)}"></label></div><label>Fasilitas galeri<input data-cf="g" value="${esc(c.g)}"></label><label><input data-cf="nw" type="checkbox"${c.nw?" checked":""}>Non wedding (tanpa data mempelai)</label></details>
+ <details class="sub" open><summary>Daftar tema · <span data-tcount>${(c.th||[]).length}</span></summary><p class="mu sm" style="margin-top:6px">Nomor tema harus sama dengan nomor tema di undangan.</p><textarea data-cf="th" hidden>${esc(th)}</textarea><div data-trs>${(c.th||[]).map(thRow).join("")}</div><button type="button" class="ghost sm" data-act="thadd" style="margin-top:12px">＋ Tambah tema</button></details>
+ <details class="sub"><summary>Foto contoh preview</summary><label>Satu link per baris: sampul, mempelai wanita, mempelai pria, penutup, lalu galeri (baris kosong = foto bawaan)<textarea data-cf="ph" rows="5">${esc((c.ph||[]).join("\n"))}</textarea></label><div class="g2" style="margin-top:10px"><label>Posisi foto contoh<select data-ps><option value="0">Sampul</option><option value="1">Mempelai wanita</option><option value="2">Mempelai pria</option><option value="3">Penutup</option><option value="g">Tambah ke galeri</option></select></label><label class="upl" style="margin:22px 0 0;padding:12px"><input type="file" accept="image/*" data-aup="ph">＋ Unggah foto contoh</label></div></details>
+ <details class="sub"><summary>Latar panel per tema</summary><label>Satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label></details>
+ <p style="margin-top:14px"><button class="danger sm" data-act="cdel" data-i="${i}">Hapus kategori ini</button></p></section>`}
+let ccur=null;
+function vAdmCat(){
+ if(!admin)return vAdm();
+ const L=edc||(edc=JSON.parse(JSON.stringify(CAT)));if(!L.some(c=>c.id===ccur))ccur=(L[0]||{}).id;
+ return`<div style="padding-top:22px"><div class="row between" style="margin-bottom:6px"><h2>Katalog &amp; harga</h2><button class="ghost sm" data-act="nav" data-v="apesan">← Pesanan</button></div>
+ <p class="mu sm" style="margin-bottom:14px">Atur kategori, harga paket, daftar tema, dan foto contoh. Tekan <b>Simpan katalog</b> agar perubahan tampil di situs.</p>
+ <details class="sub" data-hc="1"><summary>Gambar 3 HP di beranda</summary><p class="mu sm" style="margin-top:4px">Kiri, tengah, kanan. Kosongkan untuk tampilan bawaan.</p>${[0,1,2].map(i=>`<label>${["HP kiri","HP tengah","HP kanan"][i]}<input data-hero="${i}" value="${esc(HERO[i]||"")}" placeholder="Link gambar"></label><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="hero" data-hi="${i}">＋ Unggah gambar</label>`).join("")}</details>
+ <div class="sec2">Kategori</div><div class="chipset" id="cchips">${L.map(c=>`<button data-act="ccur" data-id="${esc(c.id)}" class="${c.id===ccur?"on":""}">${esc(c.n||"Baru")}</button>`).join("")}<button class="ghost" data-act="cadd">＋ Kategori</button></div>
+ ${L.map((c,i)=>catEd(c,i)).join("")}
+ <div class="savebar"><span class="sm mu">Perubahan belum tersimpan sebelum ditekan Simpan.</span><button data-act="csave">Simpan katalog</button></div></div>`}
 function collectCat(keep){const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
  const th=v("th").value.split("\n").map(l=>{const p=l.split("|").map(x=>x.trim());return{n:+p[0],name:p[1]||"",u:p[2]||"",img:p[3]||""}}).filter(x=>x.n>0);
  return{id:v("id").value,n:v("n").value.trim(),pn:v("pn").value.trim(),p:+v("p").value||0,g:v("g").value.trim(),nw:v("nw").checked,th,bgs:parseBgs(v("bgs")?v("bgs").value:""),ph:(v("ph")?v("ph").value.split("\n").map(x=>x.trim()):[]).join("\n").replace(/\n+$/,"").split("\n").filter((x,i,a)=>a.length>1||x)}}).filter(x=>keep||x.n)}
@@ -1448,7 +1697,7 @@ function vAdm(){
  const n=s=>all.filter(o=>o.status===s).length,rev=all.reduce((a,o)=>{const c=cat(o.cat);return a+(c?c.p:0)},0);
  return`<div style="padding-top:22px"><div class="row between" style="margin-bottom:14px"><h2>Dashboard admin</h2><button class="ghost sm" data-act="alogout">Keluar admin</button></div>
  <div class="stats">${[["Total",all.length],["Baru",n("Baru")],["Menunggu DP",n("Menunggu DP")],["Dikerjakan",n("Dikerjakan")],["Selesai",n("Selesai")]].map(x=>`<div class="card"><span class="sm mu">${x[0]}</span><b>${x[1]}</b></div>`).join("")}<div class="card"><span class="sm mu">Nilai pesanan</span><b style="font-size:1.1rem">${rp(rev)}</b></div></div>
- ${vCatEd()}
+ <div class="card row between"><div><b>Katalog &amp; harga</b><p class="sm mu" style="margin-top:2px">Atur kategori, harga, tema, dan foto contoh.</p></div><button class="ghost sm" data-act="nav" data-v="acat">Buka</button></div>
  <div class="row between" style="margin:8px 0 10px"><div class="chipset" style="margin:0">${["Semua"].concat(ST).map(s=>`<button data-act="af" data-s="${s}" class="${afilter===s?"on":""}">${s}</button>`).join("")}</div><div class="row"><button class="ghost sm" data-act="areload">Muat ulang</button><button class="ghost sm" data-act="csv">Unduh CSV</button></div></div>
  <input id="aq" placeholder="Cari nama / nomor WhatsApp…" style="margin-bottom:14px">
  <div id="olist">${all.length?all.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(o=>{const c=cat(o.cat)||{n:o.cat,p:0,th:[]},d=o.data||{},si=Math.max(0,ST.indexOf(o.status));
@@ -1458,9 +1707,11 @@ function vAdm(){
 
 /* ============ RENDER ============ */
 function render(){
- $("#hb").textContent=tab==="dash"?"Katalog":(mine?"Dashboard":"Masuk");
- $("#dock").innerHTML=[["kat",I.home,"Katalog"],["harga",I.tag,"Harga"],["dash",I.user,mine?"Akun":"Pesan"]].map(x=>`<button data-act="nav" data-v="${x[0]}" class="${(tab==="kat"&&x[0]==="kat")||(tab==="dash"&&x[0]==="dash")||(tab==="adm"&&x[0]==="dash")?"on":""}">${x[1]}${x[2]}</button>`).join("");
- $("#app").innerHTML=(tab==="kat"?vKat():tab==="dash"?vDash():vAdm())+(err?`<p class="sm c" style="color:#d33;margin-top:14px">${esc(err)}</p>`:"");
+ $("#hb").textContent=tab==="dash"?"Katalog":(tab==="adm"||tab==="admcat")?"Situs":(mine?"Dashboard":"Masuk");
+ const isA=tab==="adm"||tab==="admcat",DK=isA?[["apesan",I.user,"Pesanan"],["acat",I.tag,"Katalog &amp; Harga"],["asitus",I.home,"Situs"]]:[["kat",I.home,"Katalog"],["harga",I.tag,"Harga"],["dash",I.user,mine?"Akun":"Pesan"]];
+ $("#dock").classList.toggle("adm",isA);document.body.classList.toggle("isadm",isA);
+ $("#dock").innerHTML=DK.map(x=>`<button data-act="nav" data-v="${x[0]}" class="${(isA?(x[0]==="apesan"&&tab==="adm")||(x[0]==="acat"&&tab==="admcat"):(tab==="kat"&&x[0]==="kat")||(tab==="dash"&&x[0]==="dash"))?"on":""}">${x[1]}${x[2]}</button>`).join("");
+ $("#app").innerHTML=(tab==="kat"?vKat():tab==="dash"?vDash():tab==="admcat"?vAdmCat():vAdm())+(err?`<p class="sm c" style="color:#d33;margin-top:14px">${esc(err)}</p>`:"");
  reveal();
 }
 let io;function reveal(){if(io)io.disconnect();io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});$$(".rv:not(.in)").forEach(el=>io.observe(el))}
@@ -1478,7 +1729,8 @@ async function shrink(file,max=1600){const url=URL.createObjectURL(file);
 async function admUp(t,box){const kind=t.dataset.aup,f=t.files[0];toast("Mengunggah…");
  try{const b64=await shrink(f,kind==="card"||kind==="hero"?900:1400),r=await api({a:"adm_upload",aid,pass:apass,k:kind,mime:"image/jpeg",b64});
   if(!r||r.err)throw new Error(r&&r.err==="auth"?"Sesi admin habis, masuk lagi":(r&&r.err)||"Gagal mengunggah");
-  if(kind==="card"){const n=+box.querySelector("[data-cn]").value,ta=box.querySelector('[data-cf="th"]'),L=ta.value.split("\n"),i=L.findIndex(l=>+l.split("|")[0].trim()===n);
+  if(kind==="card"&&t.closest("[data-tr]")){const row=t.closest("[data-tr]"),u=r.url.replace("=w1600","=w700");row.querySelector('[data-tf="img"]').value=u;const ti=row.querySelector(".timg");let im=ti.querySelector("img");if(!im){const hi=ti.querySelector("i");hi&&hi.remove();im=document.createElement("img");ti.prepend(im)}im.src=u;thSync(box)}
+  else if(kind==="card"){const n=+box.querySelector("[data-cn]").value,ta=box.querySelector('[data-cf="th"]'),L=ta.value.split("\n"),i=L.findIndex(l=>+l.split("|")[0].trim()===n);
    if(i<0)throw new Error("Nomor tema tidak ada di daftar");const p=L[i].split("|").map(x=>x.trim());while(p.length<4)p.push("");p[3]=r.url.replace("=w1600","=w700");L[i]=p.join(" | ");ta.value=L.join("\n")}
   else if(kind==="bg"){const ta=box.querySelector('[data-cf="bgs"]'),n=+box.querySelector("[data-bn]").value,p=box.querySelector("[data-bp]").value;if(!n)throw new Error("Isi nomor tema");const key=n+"."+p,L=ta.value.split("\n").filter(x=>x.trim()&&x.split("|")[0].trim()!==key);L.push(key+" | "+r.url.replace("=w1600","=w1200"));ta.value=L.join("\n")}
   else if(kind==="hero"){box.querySelector('[data-hero="'+t.dataset.hi+'"]').value=r.url.replace("=w1600","=w900")}
@@ -1491,7 +1743,7 @@ async function upload(file,k){const b64=await shrink(file);const r=await api({a:
 async function loadAll(){const r=await guard(()=>api({a:"adm_list",aid,pass:apass}));if(r&&!r.err)all=r.orders||[];else{err="Admin: gagal memuat pesanan.";all=[]}render()}
 
 const ACT={
- nav(el){const v=el.dataset.v;if(v==="harga")return tab==="kat"?go("kat","#harga"):(tab="kat",render(),setTimeout(()=>$("#harga")&&$("#harga").scrollIntoView({behavior:"smooth"}),60));if(v==="dash"&&admin&&tab==="adm")return go("adm");go(v)},
+ nav(el){const v=el.dataset.v;if(tab==="admcat"&&document.querySelector("[data-cc]"))edc=collectCat(1);if(v==="apesan"){go("adm");if(admin)loadAll();return}if(v==="acat")return go("admcat");if(v==="asitus")return go("kat");if(v==="harga")return tab==="kat"?go("kat","#harga"):(tab="kat",render(),setTimeout(()=>$("#harga")&&$("#harga").scrollIntoView({behavior:"smooth"}),60));if(v==="dash"&&admin&&tab==="adm")return go("adm");go(v)},
  scroll(el){const t=$(el.dataset.t);t&&t.scrollIntoView({behavior:"smooth",block:"start"})},
  cat(el){cur=el.dataset.id;const y=scrollY;render();scrollTo(0,y)},
  prev(el){if(el.dataset.u)window.open(el.dataset.u,"_blank","noopener");else openPv(+el.dataset.n)},
@@ -1524,14 +1776,19 @@ const ACT={
  async adel(el){if(!confirm("Hapus pesanan ini secara permanen?"))return;const r=await guard(()=>api({a:"adm_del",aid,pass:apass,id:el.dataset.id}));if(r&&!r.err){all=all.filter(o=>o.id!==el.dataset.id);toast("Pesanan dihapus");render()}},
  csv(){const rows=[["Nama","WhatsApp","Kategori","Tema","Harga","Status","Tanggal acara"]].concat(all.map(o=>{const c=cat(o.cat)||{n:o.cat,p:0,th:[]};return[o.name,o.wa,c.n,tl(c,+o.theme),c.p,o.status,(o.data||{}).tgl||""]}));
   saveFile("pesanan-undangan.csv",new Blob([rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n")],{type:"text/csv"}))},
- cadd(){edc=collectCat(1);edc.push({id:"k"+Date.now().toString(36),n:"",pn:"",p:0,g:"",nw:false,th:[]});render();const d=$("details.card");d&&(d.open=true)},
- cdel(el){edc=collectCat(1);edc.splice(+el.dataset.i,1);render();const d=$("details.card");d&&(d.open=true)},
+ cadd(){edc=collectCat(1);const id="k"+Date.now().toString(36);edc.push({id,n:"",pn:"",p:0,g:"",nw:false,th:[]});ccur=id;render();scrollTo({top:0})},
+ cdel(el){if(!confirm("Hapus kategori ini?"))return;edc=collectCat(1);edc.splice(+el.dataset.i,1);ccur=(edc[0]||{}).id;render()},
+ ccur(el){ccur=el.dataset.id;$$("#cchips button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===ccur));$$("[data-cc]").forEach(s=>s.hidden=s.dataset.cid!==ccur)},
+ thadd(el){const box=el.closest("[data-cc]"),ns=[...box.querySelectorAll('[data-tf="n"]')].map(i=>+i.value||0),nx=ns.length?Math.max.apply(null,ns)+1:"";box.querySelector("[data-trs]").insertAdjacentHTML("beforeend",thRow({n:nx}));thSync(box);const rs=box.querySelectorAll("[data-tr]"),last=rs[rs.length-1];last&&last.querySelector('[data-tf="name"]').focus()},
+ trdel(el){const box=el.closest("[data-cc]");el.closest("[data-tr]").remove();thSync(box)},
  async csave(){const L=collectCat();if(!L.length)return toast("Minimal satu kategori");const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:L,hero:HERO}));if(r&&!r.err){CAT=L;edc=null;if(!cat(cur))cur=CAT[0].id;toast("Katalog tersimpan ✓");render()}else if(r)toast("Gagal menyimpan katalog")}
 };
 document.addEventListener("click",e=>{const t=e.target.closest("[data-act]");if(!t)return;const f=ACT[t.dataset.act];if(f){t.disabled&&0;f(t)}});
-$("#hb").onclick=()=>{if(tab==="dash")go("kat");else go("dash")};
+$("#hb").onclick=()=>{if(tab==="dash"||tab==="adm"||tab==="admcat")go("kat");else go("dash")};
 let lt=0,ltm;$("#logo").onclick=()=>{lt++;clearTimeout(ltm);ltm=setTimeout(()=>{lt=0},2000);if(lt>=5){lt=0;tab="adm";render();scrollTo(0,0);if(admin)loadAll()}else if(lt===1&&tab!=="kat")go("kat")};
 document.addEventListener("input",e=>{const t=e.target;if(t.closest("#frm"))dirty=true;
+ if(t.closest&&t.closest("[data-tr]"))thSync(t.closest("[data-cc]"));
+ if(t.dataset&&t.dataset.cf==="n"){const sc=t.closest("[data-cc]"),cb=sc&&$('#cchips [data-id="'+sc.dataset.cid+'"]');if(cb)cb.textContent=t.value||"Baru"}
  if(t.id==="aq"){const q=t.value.toLowerCase().trim();$$("[data-q]").forEach(c=>{c.hidden=!(c.dataset.q.includes(q)&&(afilter==="Semua"||c.dataset.os===afilter))})}});
 document.addEventListener("change",async e=>{const t=e.target;
  if(t.id==="o_c"){const c=cat(t.value);$("#o_t").innerHTML=themeOpts(c)}
