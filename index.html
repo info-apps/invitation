@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fff4ee">
-<title>INVITMEE Undangan Digital — Katalog &amp; Dashboard</title>
+<title>Undangan Digital — Katalog &amp; Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Great+Vibes&display=swap">
@@ -179,6 +179,11 @@ details.sub[open]>summary{margin-bottom:6px}
 .savebar{position:sticky;bottom:86px;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;margin:18px 0 90px;border-radius:18px;background:var(--card);border:1px solid var(--ln);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 24px -14px rgba(0,0,0,.4)}
 .dock.adm button{padding:10px 13px;white-space:nowrap;font-size:.8rem;gap:5px}
 body.isadm #wa{display:none}
+.acc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--ln);border-radius:14px;background:var(--in);margin-top:10px}
+.acc .no{font:800 1.15rem var(--fh);letter-spacing:.04em;margin:2px 0}
+.pr{grid-template-columns:96px 1fr 42px}.pr [data-pf=name]{grid-column:1/-1}
+.proof{margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--in)}
+.proof .photos img{width:64px;height:64px;object-fit:cover;border-radius:10px}
 .chipset{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .chipset button{background:var(--in);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);padding:7px 14px;font-size:.78rem}
 .chipset button.on{background:var(--grad);color:#fff}
@@ -1652,6 +1657,20 @@ const PANEL=["Cover","Beranda","Ayat","Mempelai","Hitung mundur","Acara","Kisah"
 const bgText=c=>Object.keys(c.bgs||{}).sort((a,b)=>a-b).map(n=>Object.keys(c.bgs[n]).sort((a,b)=>a==="*"?-1:b==="*"?1:a-b).map(p=>n+"."+p+" | "+c.bgs[n][p]).join("\n")).filter(Boolean).join("\n");
 const parseBgs=t=>{const o={};String(t||"").split("\n").forEach(l=>{const m=/^\s*(\d+)\.(\*|\d+)\s*\|\s*(\S+)\s*$/.exec(l);if(m){(o[m[1]]=o[m[1]]||{})[m[2]]=m[3]}});return o};
 let HERO=["","",""];
+let PAY=[];
+function payRow(a){return`<div class="tr pr" data-pr><input data-pf="bank" placeholder="Bank (mis. BCA)" aria-label="Bank" value="${esc(a.bank||"")}"><input data-pf="no" inputmode="numeric" placeholder="No. rekening" aria-label="Nomor rekening" value="${esc(a.no||"")}"><button type="button" class="danger sm" data-act="prdel" aria-label="Hapus rekening">✕</button><input data-pf="name" placeholder="Atas nama" aria-label="Atas nama" value="${esc(a.name||"")}"></div>`}
+function vBayar(c){
+ const px=(mine.photos||[]).map((p,i)=>[p,i]).filter(x=>x[0].k==="bayar"),paid=ST.indexOf(mine.status)>=2,acc=PAY.filter(a=>a.no);
+ const wa="https://wa.me/"+WA_ADMIN+"?text="+encodeURIComponent("Halo admin, saya sudah melakukan pembayaran untuk pesanan \""+mine.name+"\" ("+c.n+") sebesar "+rp(c.p)+". Bukti transfer sudah saya unggah di dashboard.");
+ return`<div class="card" id="bayar"><div class="row between"><b>Pembayaran</b><span class="pill">${paid?"Dikonfirmasi ✓":px.length?"Bukti terkirim":"Menunggu pembayaran"}</span></div>
+ <p class="sm mu" style="margin:6px 0 0">Total pembayaran <b>${rp(c.p)}</b> · bayar penuh</p>
+ ${paid?'<p class="sm" style="margin-top:8px">Terima kasih, pembayaran Anda sudah dikonfirmasi admin.</p>':`<p class="sm mu" style="margin:4px 0 0">Transfer ke salah satu rekening berikut, lalu unggah bukti transfernya.</p>
+ ${acc.length?acc.map(a=>`<div class="acc"><div><b>${esc(a.bank)}</b><div class="no">${esc(a.no)}</div><span class="sm mu">a.n. ${esc(a.name)}</span></div><button class="ghost sm" data-act="cprek" data-no="${esc(String(a.no).replace(/[^\d]/g,""))}">Salin</button></div>`).join(""):'<p class="sm mu" style="margin-top:10px">Nomor rekening belum diatur admin. Silakan hubungi admin lewat WhatsApp.</p>'}
+ <label class="upl" style="margin-top:12px"><input type="file" accept="image/*" data-up="bayar">＋ Unggah bukti transfer</label>`}
+ ${px.length?`<div class="photos" style="margin-top:8px">${px.map(x=>`<span><a href="${esc(x[0].url)}" target="_blank" rel="noopener"><img src="${esc(x[0].url)}" alt="Bukti pembayaran"></a>${paid?"":`<button class="x" data-act="pdel" data-i="${x[1]}" aria-label="Hapus bukti">✕</button>`}</span>`).join("")}</div>${paid?"":`<a class="btn ghost sm" style="margin-top:10px" target="_blank" rel="noopener" href="${wa}">Kabari admin via WhatsApp</a>`}`:""}</div>`}
+function proofsHtml(o){const px=(o.photos||[]).filter(p=>p.k==="bayar");
+ return px.length?`<div class="proof"><b class="sm">💳 Bukti pembayaran (${px.length})</b><div class="photos" style="margin-top:6px">${px.map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="Bukti pembayaran"></a>`).join("")}</div></div>`:(ST.indexOf(o.status)<2?'<p class="sm mu" style="margin:8px 0 0">Belum ada bukti pembayaran.</p>':"")}
+
 const BRAND_DEF="Undangan Digital";
 let BRAND={name:BRAND_DEF,logo:""},brandOn=false;
 try{const bc=JSON.parse(localStorage.getItem("brand")||"null");if(bc&&bc.name)BRAND={name:String(bc.name),logo:String(bc.logo||"")}}catch(e){}
@@ -1679,7 +1698,7 @@ let CAT=[
 const CDESC={"3d":"Pintu 3D, cincin mengorbit, foto miring interaktif.",env:"Animasi amplop yang terbuka sebelum undangan tampil.",sp:"Benang emas mengikuti cerita kalian dari sampul sampai penutup.",cf:"Nuansa klasik dengan ornamen bunga.",nw:"Aqiqah, ulang tahun, khitan, halalbihalal."};
 const FEAT=["Custom Nama Tamu (Unlimited)","Love Story","Amplop/Kado Digital","Fitur RSVP Google Sheet","Hitung Mundur Acara","Kolom Ucapan","Navigasi Lokasi","Quotes Pernikahan","Live Streaming","Musik Bebas Request"];
 const PAL=[["#14706f","#072a2c"],["#a3506a","#3d1422"],["#2a4e8c","#0a1730"],["#9a2e3d","#32090f"],["#68875f","#1f2e1d"],["#474747","#0a0a0a"],["#7a4c90","#25122e"],["#1384a4","#052b3a"]];
-const ST=["Baru","Menunggu DP","Dikerjakan","Selesai"];
+const ST=["Baru","Menunggu Pembayaran","Dikerjakan","Selesai"];
 const SL=[["cover","Foto sampul"],["w","Foto mempelai wanita"],["p","Foto mempelai pria"],["gal","Foto galeri"],["end","Foto penutup"]];
 const cat=id=>CAT.find(c=>c.id===id);
 const GL={"3d":8,env:5,cf:5,sp:6,nw:5};
@@ -1690,7 +1709,7 @@ function ytIdOf(u){u=String(u||"").trim();if(!u)return"";if(!/^https?:\/\//i.tes
 const galMax=id=>{const c=cat(id);return(c&&+c.gl>0)?Math.min(30,+c.gl):(GL[id]||5)};
 const fxId=c=>String((c&&c.id)||"").replace(/[^\w-]/g,"");
 const tl=(c,n)=>{const t=c&&c.th.find(x=>x.n===n);return t&&t.name?t.name:"Tema "+n};
-const slb=k=>(SL.find(s=>s[0]===k)||[0,k])[1];
+const slb=k=>k==="bayar"?"Bukti pembayaran":(SL.find(s=>s[0]===k)||[0,k])[1];
 /* jenis acara non-wedding mengikuti judul tema */
 function kindOfTheme(c,n){if(!c||!c.nw)return"wedding";const t=(tl(c,+n)||"").toLowerCase();return/ulang|birthday/.test(t)?"ulangtahun":/aqiqah|akikah/.test(t)?"aqiqah":/khitan|sunat/.test(t)?"khitan":/halal/.test(t)?"halal":"umum"}
 const kindOf=o=>kindOfTheme(cat(o.cat),o.theme);
@@ -1767,7 +1786,7 @@ function themeCard(c,t,i){const p=PAL[t.n===43?6:t.n%8],m='<i></i><em>A &amp; B<
 function vKat(){
  const c=cat(cur)||CAT[0],total=CAT.reduce((a,x)=>a+x.th.length,0),min=Math.min.apply(null,CAT.map(x=>+x.p||0).filter(Boolean).concat([1e9]));
  const bento=[["💌","Nama tamu otomatis","Link personal untuk setiap tamu, tanpa batas.","wide hot"],["📍","Navigasi lokasi","Tombol Google Maps untuk tiap acara.",""],["⏳","Hitung mundur","Detik demi detik menuju hari H.",""],["🎁","Amplop digital","Salin nomor rekening dalam sekali ketuk.",""],["💬","Ucapan &amp; doa","Tamu bisa kirim ucapan langsung.",""],["📖","Love story","Ceritakan perjalanan kalian.",""],["🎵","Musik bebas request","Pakai lagu favorit kalian.","wide"]];
- const faq=[["Bagaimana alur pemesanan?","Pilih tema, buat pesanan lewat tombol Pilih, lalu isi data di dashboard. Status pesanan terlihat di dashboard: Baru, Menunggu DP, Dikerjakan, hingga Selesai."],["Apakah data bisa diubah setelah dikirim?","Bisa. Masuk ke dashboard dengan nomor WhatsApp dan PIN, ubah data lalu tekan Simpan."],["Bagaimana membagikan undangan ke tamu?","Setelah link undangan tersedia, buka tab Tamu di dashboard. Tambahkan nama tamu, lalu kirim link personal lewat WhatsApp."],["Foto apa saja yang perlu disiapkan?","Foto sampul, foto mempelai, foto galeri, dan foto penutup. Jumlah foto galeri mengikuti paket yang dipilih."]];
+ const faq=[["Bagaimana alur pemesanan?","Pilih tema, buat pesanan lewat tombol Pilih, lalu isi data di dashboard. Status pesanan terlihat di dashboard: Baru, Menunggu Pembayaran, Dikerjakan, hingga Selesai."],["Apakah data bisa diubah setelah dikirim?","Bisa. Masuk ke dashboard dengan nomor WhatsApp dan PIN, ubah data lalu tekan Simpan."],["Bagaimana membagikan undangan ke tamu?","Setelah link undangan tersedia, buka tab Tamu di dashboard. Tambahkan nama tamu, lalu kirim link personal lewat WhatsApp."],["Foto apa saja yang perlu disiapkan?","Foto sampul, foto mempelai, foto galeri, dan foto penutup. Jumlah foto galeri mengikuti paket yang dipilih."]];
  return`<section class="hero"><div class="hl rv in"><span class="pill">✨ Undangan website · RSVP · Amplop digital</span><h1>Undangan digital yang <em>bikin tamu bilang wow</em></h1><p class="lead">Pilih tema, isi data lewat dashboard, lalu bagikan link personal ke setiap tamu lewat WhatsApp.</p><div class="row"><button data-act="scroll" data-t="#tema">Lihat tema</button><button class="ghost" data-act="scroll" data-t="#harga">Lihat harga</button></div><div class="stats3"><div><b>${total}</b><span>Pilihan tema</span></div><div><b>${CAT.length}</b><span>Kategori</span></div><div><b>${min<1e9?rp(min):"-"}</b><span>Mulai dari</span></div></div></div>
  <div class="hv" aria-hidden="true"><div class="dv d1${HERO[0]?" hi":""}">${hpi(0)}<div><small>THE WEDDING OF</small><span>Nadia &amp; Rizky</span></div></div><div class="dv d3${HERO[2]?" hi":""}">${hpi(2)}<div><small>SAVE THE DATE</small><span>Laras &amp; Arga</span></div></div><div class="dv d2${HERO[1]?" hi":""}">${hpi(1)}<div><small>THE WEDDING OF</small><span>Shintia &amp; Bhima</span></div></div></div></section>
  <section class="sec"><h2 class="rv">Semua yang kamu butuhkan, <em>sudah ada</em></h2><div class="bento">${bento.map((b,i)=>`<div class="card rv ${b[3]}" style="--d:${i*.05}s"><span class="e">${b[0]}</span><b>${b[1]}</b><p>${b[2]}</p></div>`).join("")}</div></section>
@@ -1793,6 +1812,7 @@ function vDash(){
  const c=cat(mine.cat)||{id:mine.cat,n:mine.cat,p:0,th:[],g:"",pn:"",nw:false},si=Math.max(0,ST.indexOf(mine.status));
  return`<div style="padding-top:22px"><div class="card hd rv in"><div><span class="mu sm">Halo,</span><h2>${esc(mine.name)}</h2><p class="mu sm" style="margin-top:6px">${esc(c.n)} · ${esc(tl(c,+mine.theme))} · ${rp(c.p)}</p></div><span class="badge b${si}">${esc(mine.status)}</span></div>
  <ol class="steps" style="margin:-4px 8px 18px">${ST.map((s,i)=>`<li class="${i<si?"d":i===si?"n":""}">${s}</li>`).join("")}</ol>
+ ${vBayar(c)}
  <div class="row between" style="margin-bottom:14px"><div class="row">${mine.link?`<a class="btn sm" href="${esc(mine.link)}" target="_blank" rel="noopener">Lihat undangan</a>`:'<span class="pill">Link undangan menyusul dari admin</span>'}</div><button class="ghost sm" data-act="logout">Keluar</button></div>
  <div class="seg">${[["data","Data"],["foto","Foto"],["tamu","Tamu"]].map(x=>`<button data-act="dtab" data-t="${x[0]}" class="${dtab===x[0]?"on":""}">${x[1]}</button>`).join("")}</div>
  ${dtab==="data"?vData(c):dtab==="foto"?vFoto(c):vTamu()}</div>`}
@@ -1814,13 +1834,13 @@ function vData(c){
 function vFoto(c){
  const nw=!!c.nw,ph=mine.photos||[];
  return`<div class="card"><p class="sm mu">Foto otomatis diperkecil sebelum diunggah agar ringan. Galeri maksimal ${galMax(mine.cat)} foto.</p></div>`+SL.filter(s=>!nw||s[0]!=="p").map(s=>{const lb=nw&&s[0]==="w"?"Foto profil":s[1],th=ph.map((p,i)=>[p,i]).filter(x=>x[0].k===s[0]);
-  return`<div class="card"><b>${lb}${s[0]==="gal"?` <span class="mu sm">(${th.length}/5)</span>`:""}</b><label class="upl"><input type="file" accept="image/*"${s[0]==="gal"?" multiple":""} data-up="${s[0]}">＋ Pilih foto</label><div class="photos">${th.map(x=>`<span><img src="${esc(x[0].url)}" alt="${esc(lb)}"><button class="x" data-act="pdel" data-i="${x[1]}" aria-label="Hapus foto">✕</button></span>`).join("")}</div></div>`}).join("")}
+  return`<div class="card"><b>${lb}${s[0]==="gal"?` <span class="mu sm">(${th.length}/${galMax(mine.cat)})</span>`:""}</b><label class="upl"><input type="file" accept="image/*"${s[0]==="gal"?" multiple":""} data-up="${s[0]}">＋ Pilih foto</label><div class="photos">${th.map(x=>`<span><img src="${esc(x[0].url)}" alt="${esc(lb)}"><button class="x" data-act="pdel" data-i="${x[1]}" aria-label="Hapus foto">✕</button></span>`).join("")}</div></div>`}).join("")}
 const TPL="Assalamualaikum Wr. Wb.\n\nKepada Yth.\n{nama}\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami. Silakan buka undangan digital berikut:\n{link}\n\nMerupakan kebahagiaan bagi kami apabila berkenan hadir. Terima kasih.\n\nSalam hormat,\n{mempelai}";
 function gl(g){let u=(mine.link||"").trim(),i=u.indexOf("#"),h="";if(i>-1){h=u.slice(i);u=u.slice(0,i)}const nm=g.n.trim();
  if(mine.fmt==="h")return u+"#tamu-"+encodeURIComponent(nm.replace(/\s+/g,"-"));
  return u+(u.indexOf("?")>-1?"&":"?")+"to="+encodeURIComponent(nm)+h}
 function gmsg(g){const d=mine.data||{};return(mine.tpl||TPL).split("{nama}").join(g.n).split("{link}").join(gl(g)).split("{mempelai}").join([d.wn,d.pn].filter(Boolean).join(" & "))}
-function copy(s){const ok=()=>toast("Link tersalin ✓"),fb=()=>{const a=document.createElement("textarea");a.value=s;document.body.appendChild(a);a.select();let r=false;try{r=document.execCommand("copy")}catch(x){}a.remove();r?ok():prompt("Salin link ini:",s)};
+function copy(s,m){const ok=()=>toast(m||"Link tersalin ✓"),fb=()=>{const a=document.createElement("textarea");a.value=s;document.body.appendChild(a);a.select();let r=false;try{r=document.execCommand("copy")}catch(x){}a.remove();r?ok():prompt("Salin link ini:",s)};
  navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(s).then(ok,fb):fb()}
 function vTamu(){
  const G=mine.guests||[],n=G.filter(g=>g.s).length,h=mine.fmt==="h";
@@ -1845,12 +1865,13 @@ function vAdmCat(){
  const L=edc||(edc=JSON.parse(JSON.stringify(CAT)));if(!L.some(c=>c.id===ccur))ccur=(L[0]||{}).id;
  return`<div style="padding-top:22px"><div class="row between" style="margin-bottom:6px"><h2>Katalog &amp; harga</h2><button class="ghost sm" data-act="nav" data-v="apesan">← Pesanan</button></div>
  <p class="mu sm" style="margin-bottom:14px">Atur kategori, harga paket, daftar tema, dan foto contoh. Tekan <b>Simpan katalog</b> agar perubahan tampil di situs.</p>
+ <details class="sub" data-pc="1" open><summary>Rekening pembayaran</summary><p class="mu sm" style="margin:4px 0 0">Tampil di dashboard customer. Pembayaran penuh (tanpa DP). Maksimal 3 rekening.</p><div id="payList">${(PAY.length?PAY:[{}]).map(payRow).join("")}</div><button type="button" class="ghost sm" data-act="pradd" style="margin-top:12px">＋ Tambah rekening</button></details>
  <details class="sub" data-bc="1"><summary>Nama &amp; ikon situs</summary><label>Nama situs<input data-brand="name" maxlength="40" value="${esc(BRAND.name)}" placeholder="${BRAND_DEF}"></label><input type="hidden" data-brand="logo" value="${esc(BRAND.logo)}"><div class="timg" style="margin:12px 0 6px"><img id="brandPrev" alt="" style="width:56px;height:56px;border-radius:14px;object-fit:cover;background:var(--in)" src="${esc(BRAND.logo||svgIcon(BRAND.name))}"><label class="upl mini"><input type="file" accept="image/*" data-aup="brand">＋ Unggah ikon</label><button type="button" class="ghost sm" data-act="brandx">Hapus ikon</button></div><p class="sm mu">Ikon tampil di tab browser dan di pojok kiri atas situs. Pakai gambar persegi, misalnya logo. Nama dan ikon baru tampil setelah menekan <b>Simpan katalog</b>.</p></details>
  <details class="sub" data-hc="1"><summary>Gambar 3 HP di beranda</summary><p class="mu sm" style="margin-top:4px">Kiri, tengah, kanan. Kosongkan untuk tampilan bawaan.</p>${[0,1,2].map(i=>`<label>${["HP kiri","HP tengah","HP kanan"][i]}<input data-hero="${i}" value="${esc(HERO[i]||"")}" placeholder="Link gambar"></label><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="hero" data-hi="${i}">＋ Unggah gambar</label>`).join("")}</details>
  <div class="sec2">Kategori</div><div class="chipset" id="cchips">${L.map(c=>`<button data-act="ccur" data-id="${esc(c.id)}" class="${c.id===ccur?"on":""}">${esc(c.n||"Baru")}</button>`).join("")}<button class="ghost" data-act="cadd">＋ Kategori</button></div>
  ${L.map((c,i)=>catEd(c,i)).join("")}
  <div class="savebar"><span class="sm mu">Perubahan belum tersimpan sebelum ditekan Simpan.</span><button data-act="csave">Simpan katalog</button></div></div>`}
-function collectCat(keep){const bs=$$("[data-brand]");if(bs.length){const g=k=>(document.querySelector('[data-brand="'+k+'"]')||{}).value||"";BRAND={name:g("name").trim().slice(0,40)||BRAND_DEF,logo:g("logo").trim()}}const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
+function collectCat(keep){const pl=document.getElementById("payList");if(pl)PAY=[...pl.querySelectorAll("[data-pr]")].map(r=>{const g=k=>(r.querySelector('[data-pf="'+k+'"]').value||"").trim();return{bank:g("bank").slice(0,30),no:g("no").slice(0,40),name:g("name").slice(0,60)}}).filter(a=>a.no).slice(0,3);const bs=$$("[data-brand]");if(bs.length){const g=k=>(document.querySelector('[data-brand="'+k+'"]')||{}).value||"";BRAND={name:g("name").trim().slice(0,40)||BRAND_DEF,logo:g("logo").trim()}}const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
  const th=v("th").value.split("\n").map(l=>{const p=l.split("|").map(x=>x.trim());return{n:+p[0],name:p[1]||"",u:p[2]||"",img:p[3]||""}}).filter(x=>x.n>0);
  return{id:v("id").value,txt:(cat(v("id").value)||{}).txt||{},n:v("n").value.trim(),pn:v("pn").value.trim(),p:+v("p").value||0,g:v("g").value.trim(),gl:Math.min(30,Math.max(0,+(v("gl")&&v("gl").value)||0)),nw:v("nw").checked,vd:!!(v("vd")&&v("vd").checked),th,bgs:parseBgs(v("bgs")?v("bgs").value:""),ph:(v("ph")?v("ph").value.split("\n").map(x=>x.trim()):[]).join("\n").replace(/\n+$/,"").split("\n").filter((x,i,a)=>a.length>1||x)}}).filter(x=>keep||x.n)}
 function summ(d){const L=(k,v)=>v?`<li><b>${esc(k)}:</b> ${esc(v)}</li>`:"";
@@ -1863,14 +1884,15 @@ function vAdm(){
  if(!admin)return`<div class="auth"><div class="card rv in"><h2>Admin 🔐</h2><label>ID admin<input id="a_i" autocomplete="username"></label><label>Kata sandi<input id="a_p" type="password" autocomplete="current-password"></label><p style="margin-top:18px"><button data-act="alogin" style="width:100%">Masuk</button></p></div></div>`;
  const n=s=>all.filter(o=>o.status===s).length,rev=all.reduce((a,o)=>{const c=cat(o.cat);return a+(c?c.p:0)},0);
  return`<div style="padding-top:22px"><div class="row between" style="margin-bottom:14px"><h2>Dashboard admin</h2><button class="ghost sm" data-act="alogout">Keluar admin</button></div>
- <div class="stats">${[["Total",all.length],["Baru",n("Baru")],["Menunggu DP",n("Menunggu DP")],["Dikerjakan",n("Dikerjakan")],["Selesai",n("Selesai")]].map(x=>`<div class="card"><span class="sm mu">${x[0]}</span><b>${x[1]}</b></div>`).join("")}<div class="card"><span class="sm mu">Nilai pesanan</span><b style="font-size:1.1rem">${rp(rev)}</b></div></div>
+ <div class="stats">${[["Total",all.length],["Baru",n("Baru")],["Menunggu Bayar",n("Menunggu Pembayaran")],["Dikerjakan",n("Dikerjakan")],["Selesai",n("Selesai")]].map(x=>`<div class="card"><span class="sm mu">${x[0]}</span><b>${x[1]}</b></div>`).join("")}<div class="card"><span class="sm mu">Nilai pesanan</span><b style="font-size:1.1rem">${rp(rev)}</b></div></div>
  <div class="card row between"><div><b>Katalog &amp; harga</b><p class="sm mu" style="margin-top:2px">Atur kategori, harga, tema, dan foto contoh.</p></div><button class="ghost sm" data-act="nav" data-v="acat">Buka</button></div>
  <div class="row between" style="margin:8px 0 10px"><div class="chipset" style="margin:0">${["Semua"].concat(ST).map(s=>`<button data-act="af" data-s="${s}" class="${afilter===s?"on":""}">${s}</button>`).join("")}</div><div class="row"><button class="ghost sm" data-act="areload">Muat ulang</button><button class="ghost sm" data-act="csv">Unduh CSV</button></div></div>
  <input id="aq" placeholder="Cari nama / nomor WhatsApp…" style="margin-bottom:14px">
  <div id="olist">${all.length?all.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(o=>{const c=cat(o.cat)||{n:o.cat,p:0,th:[]},d=o.data||{},si=Math.max(0,ST.indexOf(o.status));
  return`<div class="card" data-os="${esc(o.status)}" data-q="${esc((o.name+" "+o.wa).toLowerCase())}"${afilter!=="Semua"&&o.status!==afilter?' hidden':""}><div class="row between"><b>${esc(o.name)}</b><select data-st="${esc(o.id)}" style="width:auto;margin:0;padding:8px 12px">${ST.map(s=>`<option${s===o.status?" selected":""}>${s}</option>`).join("")}</select></div><p class="sm mu" style="margin:4px 0">${esc(c.n)} · ${esc(tl(c,+o.theme))} · ${rp(c.p)} · <a href="https://wa.me/${esc(o.wa)}" target="_blank" rel="noopener">${esc(o.wa)}</a></p><label>Link undangan<input data-lk="${esc(o.id)}" type="url" placeholder="https://…" value="${esc(o.link)}"></label>
+ ${proofsHtml(o)}
  <div class="row" style="margin-top:12px">${o.link?`<a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/${esc(o.wa)}?text=${encodeURIComponent("Halo "+o.name+", undangan digital Anda sudah jadi 🎉\nLink: "+o.link+"\nSilakan masuk ke dashboard (WhatsApp + PIN) untuk membagikannya ke tamu.")}">Kabari customer</a>`:""}<button class="ghost sm" data-act="aedit" data-id="${esc(o.id)}">✎ Edit data</button><button class="ghost sm" data-act="gen" data-id="${esc(o.id)}">Unduh undangan (.html)</button><button class="danger sm" data-act="adel" data-id="${esc(o.id)}">Hapus</button></div>
- <details style="margin-top:12px"><summary>Detail data customer</summary>${summ(d)}<div class="photos">${(o.photos||[]).map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="${esc(slb(p.k))}" title="${esc(slb(p.k))}"></a>`).join("")}</div></details></div>`}).join(""):'<p class="mu c">Belum ada pesanan.</p>'}</div></div>`}
+ <details style="margin-top:12px"><summary>Detail data customer</summary>${summ(d)}<div class="photos">${(o.photos||[]).filter(p=>p.k!=="bayar").map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="${esc(slb(p.k))}" title="${esc(slb(p.k))}"></a>`).join("")}</div></details></div>`}).join(""):'<p class="mu c">Belum ada pesanan.</p>'}</div></div>`}
 
 let admEdit=false,admBackup=null;
 function leaveEdit(){if(admEdit){mine=admBackup;admBackup=null;admEdit=false;dirty=false}}
@@ -1884,6 +1906,7 @@ function vAdmEdit(){
 
 /* ============ RENDER ============ */
 function render(){
+ if(mine&&mine.status==="Menunggu DP")mine.status="Menunggu Pembayaran";all.forEach(o=>{if(o.status==="Menunggu DP")o.status="Menunggu Pembayaran"});
  $("#hb").textContent=tab==="dash"?"Katalog":(tab==="adm"||tab==="admcat"||tab==="aedit")?"Situs":(mine?"Dashboard":"Masuk");
  const isA=tab==="adm"||tab==="admcat"||tab==="aedit",DK=isA?[["apesan",I.user,"Pesanan"],["acat",I.tag,"Katalog &amp; Harga"],["asitus",I.home,"Situs"]]:[["kat",I.home,"Katalog"],["harga",I.tag,"Harga"],["dash",I.user,mine?"Akun":"Pesan"]];
  $("#dock").classList.toggle("adm",isA);document.body.classList.toggle("isadm",isA);
@@ -1961,8 +1984,11 @@ const ACT={
  ccur(el){ccur=el.dataset.id;$$("#cchips button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===ccur));$$("[data-cc]").forEach(s=>s.hidden=s.dataset.cid!==ccur)},
  thadd(el){const box=el.closest("[data-cc]"),ns=[...box.querySelectorAll('[data-tf="n"]')].map(i=>+i.value||0),nx=ns.length?Math.max.apply(null,ns)+1:"";box.querySelector("[data-trs]").insertAdjacentHTML("beforeend",thRow({n:nx}));thSync(box);const rs=box.querySelectorAll("[data-tr]"),last=rs[rs.length-1];last&&last.querySelector('[data-tf="name"]').focus()},
  trdel(el){const box=el.closest("[data-cc]");el.closest("[data-tr]").remove();thSync(box)},
+ pradd(){const pl=document.getElementById("payList");if(!pl)return;if(pl.querySelectorAll("[data-pr]").length>=3)return toast("Maksimal 3 rekening");pl.insertAdjacentHTML("beforeend",payRow({}))},
+ prdel(el){el.closest("[data-pr]").remove()},
+ cprek(el){copy(el.dataset.no,"Nomor rekening tersalin ✓")},
  brandx(){const l=document.querySelector('[data-brand="logo"]'),n=document.querySelector('[data-brand="name"]'),im=document.getElementById("brandPrev");if(l)l.value="";if(im)im.src=svgIcon(n?n.value:BRAND_DEF)},
- async csave(){const L=collectCat();if(!L.length)return toast("Minimal satu kategori");const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:L,hero:HERO,brand:BRAND}));if(r&&!r.err){CAT=L;edc=null;applyBrand();if(!cat(cur))cur=CAT[0].id;toast("Katalog tersimpan ✓");render()}else if(r)toast("Gagal menyimpan katalog")}
+ async csave(){const L=collectCat();if(!L.length)return toast("Minimal satu kategori");const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:L,hero:HERO,brand:BRAND,pay:PAY}));if(r&&!r.err){CAT=L;edc=null;applyBrand();if(!cat(cur))cur=CAT[0].id;toast("Katalog tersimpan ✓");render()}else if(r)toast("Gagal menyimpan katalog")}
 };
 document.addEventListener("click",e=>{const t=e.target.closest("[data-act]");if(!t)return;const f=ACT[t.dataset.act];if(f){t.disabled&&0;f(t)}});
 $("#hb").onclick=()=>{if(tab==="aedit"){ACT.nav({dataset:{v:"asitus"}});return}if(tab==="dash"||tab==="adm"||tab==="admcat")go("kat");else go("dash")};
@@ -1979,17 +2005,17 @@ document.addEventListener("change",async e=>{const t=e.target;
  else if(t.id==="g_t"){mine.tpl=t.value;await saveMine("Pesan tersimpan ✓")}
  else if(t.dataset.aup&&t.files.length){await admUp(t,t.closest("[data-cc],[data-hc]"))}
  else if(t.dataset.bl!==undefined&&t.files.length){collect();toast("Mengunggah…");try{const r=await upload(t.files[0],"logo");mine.data.banks[+t.dataset.bl].logo={id:r.id,url:r.url};await saveMine("Logo tersimpan ✓")}catch(x){toast(x.message||"Gagal mengunggah logo")}render()}
- else if(t.dataset.up&&t.files.length){collect();const k=t.dataset.up,gal=k==="gal";mine.photos=mine.photos||[];
-  const have=mine.photos.filter(p=>p.k===k).length,fs=[...t.files].slice(0,gal?Math.max(0,galMax(mine.cat)-have):1);if(!fs.length)return toast("Galeri sudah "+galMax(mine.cat)+" foto");
+ else if(t.dataset.up&&t.files.length){collect();const k=t.dataset.up,gal=k==="gal"||k==="bayar";mine.photos=mine.photos||[];
+  const have=mine.photos.filter(p=>p.k===k).length,fs=[...t.files].slice(0,gal?Math.max(0,(k==="bayar"?3:galMax(mine.cat))-have):1);if(!fs.length)return toast(k==="bayar"?"Maksimal 3 bukti transfer. Hapus salah satu dulu.":"Galeri sudah "+galMax(mine.cat)+" foto");
   toast("Mengunggah "+fs.length+" foto…");const added=[];
   for(const f of fs){try{const r=await upload(f,k);added.push({id:r.id,url:r.url,k})}catch(x){toast(x.message||"Gagal mengunggah satu foto")}}
-  if(added.length){if(!gal)mine.photos=mine.photos.filter(p=>p.k!==k);mine.photos.push(...added);await saveMine("Foto tersimpan ✓")}render()}
+  if(added.length){if(!gal)mine.photos=mine.photos.filter(p=>p.k!==k);mine.photos.push(...added);await saveMine(k==="bayar"?"Bukti pembayaran terkirim ✓":"Foto tersimpan ✓")}render()}
 });
 
 /* ============ INIT ============ */
 async function init(){
  render();
- const rc=await guard(()=>api({a:"cat_get"}));if(rc&&rc.brand&&typeof rc.brand==="object"){BRAND={name:String(rc.brand.name||"").trim()||BRAND_DEF,logo:String(rc.brand.logo||"")};applyBrand()}if(rc&&Array.isArray(rc.hero)&&rc.hero.some(Boolean)&&!HERO.some(Boolean)){HERO=[0,1,2].map(i=>rc.hero[i]||"");if(!(rc.cats&&rc.cats.length)&&tab==="kat")render()}if(rc&&rc.cats&&rc.cats.length){CAT=rc.cats;if(!cat(cur))cur=CAT[0].id;if(tab==="kat"){const y=scrollY;render();scrollTo(0,y)}}
+ const rc=await guard(()=>api({a:"cat_get"}));if(rc&&Array.isArray(rc.pay)){PAY=rc.pay.slice(0,3).map(a=>({bank:String(a.bank||""),no:String(a.no||""),name:String(a.name||"")}));if(tab==="dash")render()}if(rc&&rc.brand&&typeof rc.brand==="object"){BRAND={name:String(rc.brand.name||"").trim()||BRAND_DEF,logo:String(rc.brand.logo||"")};applyBrand()}if(rc&&Array.isArray(rc.hero)&&rc.hero.some(Boolean)&&!HERO.some(Boolean)){HERO=[0,1,2].map(i=>rc.hero[i]||"");if(!(rc.cats&&rc.cats.length)&&tab==="kat")render()}if(rc&&rc.cats&&rc.cats.length){CAT=rc.cats;if(!cat(cur))cur=CAT[0].id;if(tab==="kat"){const y=scrollY;render();scrollTo(0,y)}}
  cred=ld("cred");
  if(cred){const r=await guard(()=>api({a:"login",wa:cred.wa,pin:cred.pin}));if(r&&r.order)mine=r.order;else cred=null}
  ready=true;amode=mine?"masuk":amode;render();
