@@ -1486,7 +1486,11 @@ onScroll();
 
   // ===== mulai =====
   sizeFx(); seed(); build(); if (still) { head(1e9); lastHead = 1e9; }
-  var rz; function later(){ clearTimeout(rz); rz = setTimeout(function(){ if (root.clientWidth !== lastW) paintScr(); if (root.clientWidth !== lastW || root.scrollHeight !== lastDoc) { build(); if (still) head(1e9); } }, 250); }
+  // tanda tata letak: tinggi dokumen (tanpa lapisan benang) + tinggi tiap bagian, agar benang digambar ulang juga saat halaman MEMENDEK
+  var lastSig;
+  function sig(){ var h = thr.style.height; thr.style.height = "0"; var d = root.scrollHeight; thr.style.height = h; return d + "|" + QA("section").map(function(s){ return s.offsetHeight; }).join(","); }
+  lastSig = sig();
+  var rz; function later(){ clearTimeout(rz); rz = setTimeout(function(){ if (root.clientWidth !== lastW) paintScr(); var sg = sig(); if (root.clientWidth !== lastW || sg !== lastSig) { build(); lastSig = sig(); if (still) head(1e9); } }, 250); }
   addEventListener("resize", function(){ sizeFx(); seed(); later(); });
   if (window.ResizeObserver) new ResizeObserver(later).observe(document.body);
   if (document.fonts) { document.fonts.addEventListener("loadingdone", function(){ paintScr(); later(); }); document.fonts.ready.then(later); }
@@ -1648,6 +1652,22 @@ const PANEL=["Cover","Beranda","Ayat","Mempelai","Hitung mundur","Acara","Kisah"
 const bgText=c=>Object.keys(c.bgs||{}).sort((a,b)=>a-b).map(n=>Object.keys(c.bgs[n]).sort((a,b)=>a==="*"?-1:b==="*"?1:a-b).map(p=>n+"."+p+" | "+c.bgs[n][p]).join("\n")).filter(Boolean).join("\n");
 const parseBgs=t=>{const o={};String(t||"").split("\n").forEach(l=>{const m=/^\s*(\d+)\.(\*|\d+)\s*\|\s*(\S+)\s*$/.exec(l);if(m){(o[m[1]]=o[m[1]]||{})[m[2]]=m[3]}});return o};
 let HERO=["","",""];
+const BRAND_DEF="Undangan Digital";
+let BRAND={name:BRAND_DEF,logo:""},brandOn=false;
+try{const bc=JSON.parse(localStorage.getItem("brand")||"null");if(bc&&bc.name)BRAND={name:String(bc.name),logo:String(bc.logo||"")}}catch(e){}
+function svgIcon(n){const ch=((n||"U").trim()[0]||"U").toUpperCase().replace(/[<>&"']/g,"U");return"data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#f9735b'/><stop offset='1' stop-color='#a855f7'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(#g)'/><text x='32' y='45' font-size='34' font-weight='800' text-anchor='middle' fill='#fff' font-family='Arial,sans-serif'>"+ch+"</text></svg>")}
+function applyBrand(){const n=(BRAND.name||BRAND_DEF).trim()||BRAND_DEF,l=BRAND.logo||"",custom=n!==BRAND_DEF||!!l;
+ if(!custom&&!brandOn)return;
+ const b=document.querySelector("header.top b");if(b)b.textContent=n;
+ const lg=document.getElementById("logo");if(lg){if(l){lg.style.backgroundImage='url("'+l.replace(/"/g,"%22")+'")';lg.style.backgroundSize="cover";lg.style.backgroundPosition="center";lg.textContent=""}else{lg.style.backgroundImage="";lg.textContent=(n[0]||"U").toUpperCase()}}
+ let ic=document.querySelector('link[rel="icon"]'),ai=document.querySelector('link[rel="apple-touch-icon"]');
+ if(custom){document.title=n+" — Katalog & Dashboard";if(!ic){ic=document.createElement("link");ic.rel="icon";document.head.appendChild(ic)}ic.removeAttribute("type");ic.href=l||svgIcon(n);
+  if(l){if(!ai){ai=document.createElement("link");ai.rel="apple-touch-icon";document.head.appendChild(ai)}ai.href=l}else if(ai)ai.remove();brandOn=true}
+ else{if(ic)ic.remove();if(ai)ai.remove();brandOn=false}
+ try{localStorage.setItem("brand",JSON.stringify(BRAND))}catch(e){}}
+function iconShrink(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const S=192,cv=document.createElement("canvas");cv.width=cv.height=S;const m=Math.min(im.width,im.height);cv.getContext("2d").drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);URL.revokeObjectURL(u);res(cv.toDataURL("image/png").split(",")[1])};im.onerror=()=>rej(new Error("Gambar tidak terbaca"));im.src=u})}
+applyBrand();
+
 const hpi=i=>HERO[i]?`<img class="dvi" src="${esc(HERO[i])}" alt="" onerror="this.parentNode.classList.remove('hi');this.remove()">`:"";
 let CAT=[
  mk("3d","3D Motion","3D Motion",189000,"Gallery Photo (8 Photo) + Video Prewedding",[1,2,3,4,5,6]),
@@ -1825,11 +1845,12 @@ function vAdmCat(){
  const L=edc||(edc=JSON.parse(JSON.stringify(CAT)));if(!L.some(c=>c.id===ccur))ccur=(L[0]||{}).id;
  return`<div style="padding-top:22px"><div class="row between" style="margin-bottom:6px"><h2>Katalog &amp; harga</h2><button class="ghost sm" data-act="nav" data-v="apesan">← Pesanan</button></div>
  <p class="mu sm" style="margin-bottom:14px">Atur kategori, harga paket, daftar tema, dan foto contoh. Tekan <b>Simpan katalog</b> agar perubahan tampil di situs.</p>
+ <details class="sub" data-bc="1"><summary>Nama &amp; ikon situs</summary><label>Nama situs<input data-brand="name" maxlength="40" value="${esc(BRAND.name)}" placeholder="${BRAND_DEF}"></label><input type="hidden" data-brand="logo" value="${esc(BRAND.logo)}"><div class="timg" style="margin:12px 0 6px"><img id="brandPrev" alt="" style="width:56px;height:56px;border-radius:14px;object-fit:cover;background:var(--in)" src="${esc(BRAND.logo||svgIcon(BRAND.name))}"><label class="upl mini"><input type="file" accept="image/*" data-aup="brand">＋ Unggah ikon</label><button type="button" class="ghost sm" data-act="brandx">Hapus ikon</button></div><p class="sm mu">Ikon tampil di tab browser dan di pojok kiri atas situs. Pakai gambar persegi, misalnya logo. Nama dan ikon baru tampil setelah menekan <b>Simpan katalog</b>.</p></details>
  <details class="sub" data-hc="1"><summary>Gambar 3 HP di beranda</summary><p class="mu sm" style="margin-top:4px">Kiri, tengah, kanan. Kosongkan untuk tampilan bawaan.</p>${[0,1,2].map(i=>`<label>${["HP kiri","HP tengah","HP kanan"][i]}<input data-hero="${i}" value="${esc(HERO[i]||"")}" placeholder="Link gambar"></label><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="hero" data-hi="${i}">＋ Unggah gambar</label>`).join("")}</details>
  <div class="sec2">Kategori</div><div class="chipset" id="cchips">${L.map(c=>`<button data-act="ccur" data-id="${esc(c.id)}" class="${c.id===ccur?"on":""}">${esc(c.n||"Baru")}</button>`).join("")}<button class="ghost" data-act="cadd">＋ Kategori</button></div>
  ${L.map((c,i)=>catEd(c,i)).join("")}
  <div class="savebar"><span class="sm mu">Perubahan belum tersimpan sebelum ditekan Simpan.</span><button data-act="csave">Simpan katalog</button></div></div>`}
-function collectCat(keep){const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
+function collectCat(keep){const bs=$$("[data-brand]");if(bs.length){const g=k=>(document.querySelector('[data-brand="'+k+'"]')||{}).value||"";BRAND={name:g("name").trim().slice(0,40)||BRAND_DEF,logo:g("logo").trim()}}const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
  const th=v("th").value.split("\n").map(l=>{const p=l.split("|").map(x=>x.trim());return{n:+p[0],name:p[1]||"",u:p[2]||"",img:p[3]||""}}).filter(x=>x.n>0);
  return{id:v("id").value,txt:(cat(v("id").value)||{}).txt||{},n:v("n").value.trim(),pn:v("pn").value.trim(),p:+v("p").value||0,g:v("g").value.trim(),gl:Math.min(30,Math.max(0,+(v("gl")&&v("gl").value)||0)),nw:v("nw").checked,vd:!!(v("vd")&&v("vd").checked),th,bgs:parseBgs(v("bgs")?v("bgs").value:""),ph:(v("ph")?v("ph").value.split("\n").map(x=>x.trim()):[]).join("\n").replace(/\n+$/,"").split("\n").filter((x,i,a)=>a.length>1||x)}}).filter(x=>keep||x.n)}
 function summ(d){const L=(k,v)=>v?`<li><b>${esc(k)}:</b> ${esc(v)}</li>`:"";
@@ -1883,12 +1904,13 @@ async function shrink(file,max=1600){const url=URL.createObjectURL(file);
  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
  return c.toDataURL("image/jpeg",.84).split(",")[1]}
 async function admUp(t,box){const kind=t.dataset.aup,f=t.files[0];toast("Mengunggah…");
- try{const b64=await shrink(f,kind==="card"||kind==="hero"?900:1400),r=await api({a:"adm_upload",aid,pass:apass,k:kind,mime:"image/jpeg",b64});
+ try{const ic=kind==="brand",b64=ic?await iconShrink(f):await shrink(f,kind==="card"||kind==="hero"?900:1400),r=await api({a:"adm_upload",aid,pass:apass,k:kind,mime:ic?"image/png":"image/jpeg",b64});
   if(!r||r.err)throw new Error(r&&r.err==="auth"?"Sesi admin habis, masuk lagi":(r&&r.err)||"Gagal mengunggah");
   if(kind==="card"&&t.closest("[data-tr]")){const row=t.closest("[data-tr]"),u=r.url.replace("=w1600","=w700");row.querySelector('[data-tf="img"]').value=u;const ti=row.querySelector(".timg");let im=ti.querySelector("img");if(!im){const hi=ti.querySelector("i");hi&&hi.remove();im=document.createElement("img");ti.prepend(im)}im.src=u;thSync(box)}
   else if(kind==="card"){const n=+box.querySelector("[data-cn]").value,ta=box.querySelector('[data-cf="th"]'),L=ta.value.split("\n"),i=L.findIndex(l=>+l.split("|")[0].trim()===n);
    if(i<0)throw new Error("Nomor tema tidak ada di daftar");const p=L[i].split("|").map(x=>x.trim());while(p.length<4)p.push("");p[3]=r.url.replace("=w1600","=w700");L[i]=p.join(" | ");ta.value=L.join("\n")}
   else if(kind==="bg"){const ta=box.querySelector('[data-cf="bgs"]'),n=+box.querySelector("[data-bn]").value,p=box.querySelector("[data-bp]").value;if(!n)throw new Error("Isi nomor tema");const key=n+"."+p,L=ta.value.split("\n").filter(x=>x.trim()&&x.split("|")[0].trim()!==key);L.push(key+" | "+r.url.replace("=w1600","=w1200"));ta.value=L.join("\n")}
+  else if(kind==="brand"){const u=r.url.replace("=w1600","=w256");document.querySelector('[data-brand="logo"]').value=u;const im=document.getElementById("brandPrev");if(im)im.src=u}
   else if(kind==="hero"){box.querySelector('[data-hero="'+t.dataset.hi+'"]').value=r.url.replace("=w1600","=w900")}
   else{const ta=box.querySelector('[data-cf="ph"]'),sl=box.querySelector("[data-ps]").value,L=ta.value.split("\n").map(x=>x.trim());while(L.length<4)L.push("");
    if(sl==="g")L.push(r.url);else L[+sl]=r.url;ta.value=L.join("\n")}
@@ -1939,7 +1961,8 @@ const ACT={
  ccur(el){ccur=el.dataset.id;$$("#cchips button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===ccur));$$("[data-cc]").forEach(s=>s.hidden=s.dataset.cid!==ccur)},
  thadd(el){const box=el.closest("[data-cc]"),ns=[...box.querySelectorAll('[data-tf="n"]')].map(i=>+i.value||0),nx=ns.length?Math.max.apply(null,ns)+1:"";box.querySelector("[data-trs]").insertAdjacentHTML("beforeend",thRow({n:nx}));thSync(box);const rs=box.querySelectorAll("[data-tr]"),last=rs[rs.length-1];last&&last.querySelector('[data-tf="name"]').focus()},
  trdel(el){const box=el.closest("[data-cc]");el.closest("[data-tr]").remove();thSync(box)},
- async csave(){const L=collectCat();if(!L.length)return toast("Minimal satu kategori");const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:L,hero:HERO}));if(r&&!r.err){CAT=L;edc=null;if(!cat(cur))cur=CAT[0].id;toast("Katalog tersimpan ✓");render()}else if(r)toast("Gagal menyimpan katalog")}
+ brandx(){const l=document.querySelector('[data-brand="logo"]'),n=document.querySelector('[data-brand="name"]'),im=document.getElementById("brandPrev");if(l)l.value="";if(im)im.src=svgIcon(n?n.value:BRAND_DEF)},
+ async csave(){const L=collectCat();if(!L.length)return toast("Minimal satu kategori");const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:L,hero:HERO,brand:BRAND}));if(r&&!r.err){CAT=L;edc=null;applyBrand();if(!cat(cur))cur=CAT[0].id;toast("Katalog tersimpan ✓");render()}else if(r)toast("Gagal menyimpan katalog")}
 };
 document.addEventListener("click",e=>{const t=e.target.closest("[data-act]");if(!t)return;const f=ACT[t.dataset.act];if(f){t.disabled&&0;f(t)}});
 $("#hb").onclick=()=>{if(tab==="aedit"){ACT.nav({dataset:{v:"asitus"}});return}if(tab==="dash"||tab==="adm"||tab==="admcat")go("kat");else go("dash")};
@@ -1966,7 +1989,7 @@ document.addEventListener("change",async e=>{const t=e.target;
 /* ============ INIT ============ */
 async function init(){
  render();
- const rc=await guard(()=>api({a:"cat_get"}));if(rc&&Array.isArray(rc.hero)&&rc.hero.some(Boolean)&&!HERO.some(Boolean)){HERO=[0,1,2].map(i=>rc.hero[i]||"");if(!(rc.cats&&rc.cats.length)&&tab==="kat")render()}if(rc&&rc.cats&&rc.cats.length){CAT=rc.cats;if(!cat(cur))cur=CAT[0].id;if(tab==="kat"){const y=scrollY;render();scrollTo(0,y)}}
+ const rc=await guard(()=>api({a:"cat_get"}));if(rc&&rc.brand&&typeof rc.brand==="object"){BRAND={name:String(rc.brand.name||"").trim()||BRAND_DEF,logo:String(rc.brand.logo||"")};applyBrand()}if(rc&&Array.isArray(rc.hero)&&rc.hero.some(Boolean)&&!HERO.some(Boolean)){HERO=[0,1,2].map(i=>rc.hero[i]||"");if(!(rc.cats&&rc.cats.length)&&tab==="kat")render()}if(rc&&rc.cats&&rc.cats.length){CAT=rc.cats;if(!cat(cur))cur=CAT[0].id;if(tab==="kat"){const y=scrollY;render();scrollTo(0,y)}}
  cred=ld("cred");
  if(cred){const r=await guard(()=>api({a:"login",wa:cred.wa,pin:cred.pin}));if(r&&r.order)mine=r.order;else cred=null}
  ready=true;amode=mine?"masuk":amode;render();
