@@ -181,9 +181,14 @@ details.sub[open]>summary{margin-bottom:6px}
 body.isadm #wa{display:none}
 .acc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--ln);border-radius:14px;background:var(--in);margin-top:10px}
 .acc .no{font:800 1.15rem var(--fh);letter-spacing:.04em;margin:2px 0}
-.pr{grid-template-columns:96px 1fr 42px}.pr [data-pf=name]{grid-column:1/-1}
+.payrow{grid-template-columns:96px 1fr 42px}.payrow [data-pf=name]{grid-column:1/-1}
 .proof{margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--in)}
 .proof .photos img{width:64px;height:64px;object-fit:cover;border-radius:10px}
+.bgg{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:grid;place-items:end center}
+.bgg>div{background:var(--card,#fff);width:min(560px,100%);max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 18px 26px}
+.bgr{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--ln)}
+.bgr .th{width:62px;height:62px;border-radius:12px;border:1px solid var(--ln);background:var(--in) center/cover no-repeat}
+.bgr b{display:block}.bgr .sm{display:block}
 .chipset{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .chipset button{background:var(--in);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);padding:7px 14px;font-size:.78rem}
 .chipset button.on{background:var(--grad);color:#fff}
@@ -1657,8 +1662,30 @@ const PANEL=["Cover","Beranda","Ayat","Mempelai","Hitung mundur","Acara","Kisah"
 const bgText=c=>Object.keys(c.bgs||{}).sort((a,b)=>a-b).map(n=>Object.keys(c.bgs[n]).sort((a,b)=>a==="*"?-1:b==="*"?1:a-b).map(p=>n+"."+p+" | "+c.bgs[n][p]).join("\n")).filter(Boolean).join("\n");
 const parseBgs=t=>{const o={};String(t||"").split("\n").forEach(l=>{const m=/^\s*(\d+)\.(\*|\d+)\s*\|\s*(\S+)\s*$/.exec(l);if(m){(o[m[1]]=o[m[1]]||{})[m[2]]=m[3]}});return o};
 let HERO=["","",""];
+const BGP=[["cover","Sampul (pintu)"],["home","Beranda"],["verse","Ayat"],["couple","Mempelai"],["countdown","Hitung mundur"],["event","Acara"],["story","Kisah"],["gallery","Galeri"],["rsvp","RSVP"],["gift","Hadiah"],["wishes","Ucapan"],["thanks","Penutup"]];
+let BGD=null;
+function bgLayer(cs,css){return css+"background-color:"+cs.backgroundColor+";background-image:"+cs.backgroundImage+";background-size:"+cs.backgroundSize+";background-position:"+cs.backgroundPosition+";background-repeat:"+cs.backgroundRepeat+";"}
+function bgRender(d,OW){return new Promise((res,rej)=>{const s=OW/d.W,OH=Math.round(d.H*s),root=document.createElement("div");
+ root.setAttribute("xmlns","http://www.w3.org/1999/xhtml");root.style.cssText="position:relative;overflow:hidden;width:"+d.W+"px;height:"+d.H+"px;transform:scale("+s+");transform-origin:0 0;";
+ d.layers.forEach(css=>{const l=document.createElement("div");l.style.cssText=css;root.appendChild(l)});
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+OW+'" height="'+OH+'"><foreignObject width="100%" height="100%">'+new XMLSerializer().serializeToString(root)+"</foreignObject></svg>",im=new Image();
+ im.onload=()=>{const cv=document.createElement("canvas");cv.width=OW;cv.height=OH;cv.getContext("2d").drawImage(im,0,0,OW,OH);res(cv)};im.onerror=()=>rej(new Error("render gagal"));
+ im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)})}
+function bgCollect(n,cid){return new Promise((res,rej)=>{const c=cat(cid)||{id:cid},f=document.createElement("iframe");
+ f.style.cssText="position:fixed;left:-9999px;top:0;width:390px;height:844px;border:0";
+ f.srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__sp="+(cid==="sp"?1:0)+";window.__gn="+galMax(cid)+";window.__vd="+(hasVid(cid)?1:0)+";window.__demo=1;window.__fx='"+fxId(c)+"';<\/scr"+"ipt>");
+ f.onload=()=>setTimeout(()=>{try{const w=f.contentWindow,doc=f.contentDocument,gs=e=>w.getComputedStyle(e),gp=(e,p)=>w.getComputedStyle(e,p);
+  doc.querySelectorAll("[data-a]").forEach(e=>e.classList.add("in"));
+  const base=[];[doc.documentElement,doc.body].forEach(e=>{const cs=gs(e);base.push(bgLayer(cs,"position:absolute;left:0;top:0;width:100%;height:100%;"))});
+  const b32=doc.getElementById("bg32");if(b32)base.push(bgLayer(gs(b32),"position:absolute;left:0;top:0;width:100%;height:100%;"));
+  const out=BGP.map(([id,nm],i)=>{const e=doc.getElementById(id);if(!e)return null;const r=e.getBoundingClientRect(),W=Math.round(r.width)||390,H=Math.round(r.height);let layers=base.slice();
+   if(id==="cover"){[["::before","left:0;"],["::after","right:0;"]].forEach(([ps,pos])=>{const cs=gp(e,ps);layers.push(bgLayer(cs,"position:absolute;top:0;"+pos+"width:"+cs.width+";height:100%;"))})}
+   else layers.push(bgLayer(gs(e),"position:absolute;left:0;top:0;width:100%;height:100%;"));
+   return{id,name:nm,i,W,H,layers}}).filter(Boolean);
+  f.remove();res(out)}catch(x){f.remove();rej(x)}},1800);
+ document.body.appendChild(f)})}
 let PAY=[];
-function payRow(a){return`<div class="tr pr" data-pr><input data-pf="bank" placeholder="Bank (mis. BCA)" aria-label="Bank" value="${esc(a.bank||"")}"><input data-pf="no" inputmode="numeric" placeholder="No. rekening" aria-label="Nomor rekening" value="${esc(a.no||"")}"><button type="button" class="danger sm" data-act="prdel" aria-label="Hapus rekening">✕</button><input data-pf="name" placeholder="Atas nama" aria-label="Atas nama" value="${esc(a.name||"")}"></div>`}
+function payRow(a){return`<div class="tr payrow" data-pr><input data-pf="bank" placeholder="Bank (mis. BCA)" aria-label="Bank" value="${esc(a.bank||"")}"><input data-pf="no" inputmode="numeric" placeholder="No. rekening" aria-label="Nomor rekening" value="${esc(a.no||"")}"><button type="button" class="danger sm" data-act="prdel" aria-label="Hapus rekening">✕</button><input data-pf="name" placeholder="Atas nama" aria-label="Atas nama" value="${esc(a.name||"")}"></div>`}
 function vBayar(c){
  const px=(mine.photos||[]).map((p,i)=>[p,i]).filter(x=>x[0].k==="bayar"),paid=ST.indexOf(mine.status)>=2,acc=PAY.filter(a=>a.no);
  const wa="https://wa.me/"+WA_ADMIN+"?text="+encodeURIComponent("Halo admin, saya sudah melakukan pembayaran untuk pesanan \""+mine.name+"\" ("+c.n+") sebesar "+rp(c.p)+". Bukti transfer sudah saya unggah di dashboard.");
@@ -1857,7 +1884,7 @@ function catEd(c,i){const th=(c.th||[]).map(x=>[x.n,x.name||"",x.u||"",x.img||""
  <details class="sub" open><summary>Paket &amp; harga</summary><label>Nama kategori<input data-cf="n" value="${esc(c.n)}"></label><div class="g2"><label>Nama paket<input data-cf="pn" value="${esc(c.pn)}"></label><label>Harga (Rp)<input data-cf="p" type="number" inputmode="numeric" value="${esc(c.p)}"></label></div><div class="g2"><label>Fasilitas galeri<input data-cf="g" value="${esc(c.g)}"></label><label>Maks. foto galeri<input data-cf="gl" type="number" min="1" max="30" inputmode="numeric" value="${galMax(c.id)}"></label></div><label><input data-cf="nw" type="checkbox"${c.nw?" checked":""}>Non wedding (tanpa data mempelai)</label><label><input data-cf="vd" type="checkbox"${vdOf(c)?" checked":""}>Video prewedding (customer menautkan link YouTube)</label></details>
  <details class="sub" open><summary>Daftar tema · <span data-tcount>${(c.th||[]).length}</span></summary><p class="mu sm" style="margin-top:6px">Nomor tema harus sama dengan nomor tema di undangan.</p><textarea data-cf="th" hidden>${esc(th)}</textarea><div data-trs>${(c.th||[]).map(thRow).join("")}</div><button type="button" class="ghost sm" data-act="thadd" style="margin-top:12px">＋ Tambah tema</button></details>
  <details class="sub"><summary>Foto contoh preview</summary><label>Satu link per baris: sampul, mempelai wanita, mempelai pria, penutup, lalu galeri (baris kosong = foto bawaan)<textarea data-cf="ph" rows="5">${esc((c.ph||[]).join("\n"))}</textarea></label><div class="g2" style="margin-top:10px"><label>Posisi foto contoh<select data-ps><option value="0">Sampul</option><option value="1">Mempelai wanita</option><option value="2">Mempelai pria</option><option value="3">Penutup</option><option value="g">Tambah ke galeri</option></select></label><label class="upl" style="margin:22px 0 0;padding:12px"><input type="file" accept="image/*" data-aup="ph">＋ Unggah foto contoh</label></div></details>
- <details class="sub"><summary>Latar panel per tema</summary><label>Satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label></details>
+ <details class="sub"><summary>Latar panel per tema</summary><label>Satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label><button type="button" class="ghost sm" data-act="bgguide" style="margin-top:10px">📐 Ukuran &amp; unduh latar bawaan</button></details>
  <p style="margin-top:14px"><button class="danger sm" data-act="cdel" data-i="${i}">Hapus kategori ini</button></p></section>`}
 let ccur=null;
 function vAdmCat(){
@@ -1984,6 +2011,15 @@ const ACT={
  ccur(el){ccur=el.dataset.id;$$("#cchips button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===ccur));$$("[data-cc]").forEach(s=>s.hidden=s.dataset.cid!==ccur)},
  thadd(el){const box=el.closest("[data-cc]"),ns=[...box.querySelectorAll('[data-tf="n"]')].map(i=>+i.value||0),nx=ns.length?Math.max.apply(null,ns)+1:"";box.querySelector("[data-trs]").insertAdjacentHTML("beforeend",thRow({n:nx}));thSync(box);const rs=box.querySelectorAll("[data-tr]"),last=rs[rs.length-1];last&&last.querySelector('[data-tf="name"]').focus()},
  trdel(el){const box=el.closest("[data-cc]");el.closest("[data-tr]").remove();thSync(box)},
+ async bgguide(el){const box=el.closest("[data-cc]"),n=+(box.querySelector("[data-bn]").value||0),cid=box.dataset.cid;if(!(n>0))return toast("Isi nomor tema dulu");
+  const m=document.createElement("div");m.className="bgg";m.id="bgg";m.innerHTML='<div><div class="row between"><b>Latar bawaan · Tema '+n+'</b><button class="ghost sm" data-act="bggx">Tutup</button></div><p class="sm mu" style="margin:6px 0 0">Menyiapkan…</p></div>';
+  m.addEventListener("click",e=>{if(e.target===m)m.remove()});document.body.appendChild(m);
+  try{BGD=await bgCollect(n,cid);BGD.n=n;const th=await Promise.all(BGD.map(d=>bgRender(d,160).then(c=>c.toDataURL("image/png"))));
+   const OW=1080;m.firstChild.innerHTML='<div class="row between"><b>Latar bawaan · Tema '+n+'</b><button class="ghost sm" data-act="bggx">Tutup</button></div><p class="sm mu" style="margin:6px 0 10px">Ukuran dihitung dari tampilan HP lebar 390 px lalu diperbesar ke lebar '+OW+' px. Tinggi tiap panel mengikuti isinya, jadi angkanya perkiraan. Gambar latar pengganti dipotong otomatis (mode <i>cover</i>) mengikuti panel, jadi pakai lebar '+OW+' px dan biarkan bagian pinggir longgar.</p><button class="sm" data-act="bgall" style="margin-bottom:6px">Unduh semua</button>'+BGD.map((d,k)=>{const oh=Math.round(d.H*OW/d.W);return'<div class="bgr"><div class="th" style="background-image:url('+th[k]+')"></div><div><b>'+(d.i)+'. '+esc(d.name)+'</b><span class="sm mu">'+OW+' × '+oh+' px</span><span class="sm mu">(di HP '+d.W+' × '+d.H+' px)</span></div><button class="ghost sm" data-act="bgdl" data-k="'+k+'">Unduh</button></div>'}).join("")}
+  catch(x){m.firstChild.innerHTML='<div class="row between"><b>Latar bawaan</b><button class="ghost sm" data-act="bggx">Tutup</button></div><p class="sm" style="margin-top:8px">Gagal menyiapkan gambar. Coba lagi.</p>'}},
+ bggx(){const m=document.getElementById("bgg");if(m)m.remove()},
+ async bgdl(el){if(!BGD)return;const d=BGD[+el.dataset.k],OW=1080,cv=await bgRender(d,OW);cv.toBlob(b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="latar-tema"+BGD.n+"-"+d.i+"-"+d.id+"-"+OW+"x"+cv.height+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},"image/png")},
+ async bgall(){if(!BGD)return;for(let k=0;k<BGD.length;k++){await ACT.bgdl({dataset:{k}});await new Promise(r=>setTimeout(r,500))}},
  pradd(){const pl=document.getElementById("payList");if(!pl)return;if(pl.querySelectorAll("[data-pr]").length>=3)return toast("Maksimal 3 rekening");pl.insertAdjacentHTML("beforeend",payRow({}))},
  prdel(el){el.closest("[data-pr]").remove()},
  cprek(el){copy(el.dataset.no,"Nomor rekening tersalin ✓")},
