@@ -1316,7 +1316,11 @@ onScroll();
 
   // ===== mulai =====
   sizeFx(); seed(); build(); if (still) { head(1e9); lastHead = 1e9; }
-  var rz; function later(){ clearTimeout(rz); rz = setTimeout(function(){ if (root.clientWidth !== lastW) paintScr(); if (root.clientWidth !== lastW || root.scrollHeight !== lastDoc) { build(); if (still) head(1e9); } }, 250); }
+  // tanda tata letak: tinggi dokumen (tanpa lapisan benang) + tinggi tiap bagian, agar benang digambar ulang juga saat halaman MEMENDEK
+  var lastSig;
+  function sig(){ var h = thr.style.height; thr.style.height = "0"; var d = root.scrollHeight; thr.style.height = h; return d + "|" + QA("section").map(function(s){ return s.offsetHeight; }).join(","); }
+  lastSig = sig();
+  var rz; function later(){ clearTimeout(rz); rz = setTimeout(function(){ if (root.clientWidth !== lastW) paintScr(); var sg = sig(); if (root.clientWidth !== lastW || sg !== lastSig) { build(); lastSig = sig(); if (still) head(1e9); } }, 250); }
   addEventListener("resize", function(){ sizeFx(); seed(); later(); });
   if (window.ResizeObserver) new ResizeObserver(later).observe(document.body);
   if (document.fonts) { document.fonts.addEventListener("loadingdone", function(){ paintScr(); later(); }); document.fonts.ready.then(later); }
