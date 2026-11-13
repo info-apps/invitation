@@ -189,6 +189,12 @@ body.isadm #wa{display:none}
 .bgr{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--ln)}
 .bgr .th{width:62px;height:62px;border-radius:12px;border:1px solid var(--ln);background:var(--in) center/cover no-repeat}
 .bgr b{display:block}.bgr .sm{display:block}
+.pbar{height:6px;background:var(--in);border-radius:99px;margin-top:8px;overflow:hidden}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#f9735b,#a855f7);border-radius:99px}
+.gnext{width:100%;margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:2px}.gnext .sm{opacity:.92;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grow{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid var(--ln)}.grow[hidden]{display:none}
+.gtx{flex:1;min-width:0}.gtx b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gtx .sm{display:block}
+.gok{color:#1e9e5a;font-weight:800}
+.ig{min-width:38px;height:38px;padding:0;border-radius:12px;display:grid;place-items:center;background:var(--in);color:var(--ink);box-shadow:none;border:1px solid var(--ln);font-size:.95rem}.ig.w{background:#25d366;color:#fff;border-color:#25d366;font:800 .7rem system-ui,sans-serif}.ig.d{color:#d33}
 .chipset{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .chipset button{background:var(--in);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);padding:7px 14px;font-size:.78rem}
 .chipset button.on{background:var(--grad);color:#fff}
@@ -1721,6 +1727,13 @@ document.addEventListener("change",async e=>{const t=e.target;if(!t||t.id!=="g_f
   const g=guestRows(rows);if(!g.length)return toast("Tidak ada data. Isi nama di kolom A dan nomor WhatsApp di kolom B.");
   $("#g_b").value=g.map(r=>r[0]+(r[1]?", "+r[1]:"")).join("\n");const d=$("#g_bd");if(d)d.open=true;toast(g.length+" baris terbaca. Periksa lalu tekan Impor.")}
  catch(x){toast("File tidak bisa dibaca. Pastikan berformat .xlsx atau .csv")}});
+let gq="",gfl="all";
+function gApply(){const q=gq.trim().toLowerCase(),rows=$$("#glist .grow");let v=0;rows.forEach(r=>{const ok=(!q||r.dataset.gq.includes(q))&&(gfl==="all"||(gfl==="new"&&r.dataset.gs==="0")||(gfl==="sent"&&r.dataset.gs==="1"));r.hidden=!ok;if(ok)v++});const e=$("#gempty");if(e)e.hidden=v>0||!rows.length}
+function vGList(G,n){const nx=G.findIndex(g=>!g.s),pc=G.length?Math.round(n/G.length*100):0,cnt=f=>f==="all"?G.length:f==="new"?G.length-n:n;
+ return`<div class="card" id="gprog"><div class="row between"><b>Terkirim ${n} dari ${G.length}</b><span class="sm mu">${pc}%</span></div><div class="pbar"><i style="width:${pc}%"></i></div>${G.length?(nx>=0?`<button class="gnext" data-act="gnext">Kirim ke tamu berikutnya<span class="sm">${esc(G[nx].n)}</span></button>`:'<p class="sm" style="margin:10px 0 0">Semua tamu sudah dikirimi ✓</p>'):""}</div>
+ ${G.length?`<input id="g_q" type="search" placeholder="Cari nama atau nomor tamu" value="${esc(gq)}" style="margin-top:12px"><div class="chipset" id="gchips" style="margin-top:10px">${[["all","Semua"],["new","Belum dikirim"],["sent","Terkirim"]].map(x=>`<button data-act="gfl" data-f="${x[0]}" class="${gfl===x[0]?"on":""}">${x[1]} (${cnt(x[0])})</button>`).join("")}</div>
+ <div id="glist">${G.map((g,i)=>`<div class="grow" data-gs="${g.s?1:0}" data-gq="${esc((g.n+" "+(g.w||"")).toLowerCase())}"><div class="gtx"><b>${esc(g.n)}</b><span class="sm mu">${g.w?"+"+esc(g.w):"tanpa nomor WA"}</span></div>${g.s?'<span class="gok" title="Sudah dikirim">✓</span>':""}<button class="ig w" data-act="gw" data-i="${i}" aria-label="Kirim WhatsApp ke ${esc(g.n)}" title="Kirim WhatsApp">WA</button><button class="ig" data-act="gc" data-i="${i}" aria-label="Salin link" title="Salin link">🔗</button><button class="ig d" data-act="gd" data-i="${i}" aria-label="Hapus tamu" title="Hapus">✕</button></div>`).join("")}<p class="mu c" id="gempty" hidden>Tidak ada tamu yang cocok.</p></div>`:'<p class="mu c">Belum ada tamu.</p>'}`}
+document.addEventListener("input",e=>{if(e.target&&e.target.id==="g_q"){gq=e.target.value;gApply()}});
 let PAY=[];
 function payRow(a){return`<div class="tr payrow" data-pr><input data-pf="bank" placeholder="Bank (mis. BCA)" aria-label="Bank" value="${esc(a.bank||"")}"><input data-pf="no" inputmode="numeric" placeholder="No. rekening" aria-label="Nomor rekening" value="${esc(a.no||"")}"><button type="button" class="danger sm" data-act="prdel" aria-label="Hapus rekening">✕</button><input data-pf="name" placeholder="Atas nama" aria-label="Atas nama" value="${esc(a.name||"")}"></div>`}
 function vBayar(c){
@@ -1911,7 +1924,7 @@ function vTamu(){
  return`<div class="card"><p class="sm" style="word-break:break-all"><b>Link undangan:</b> ${mine.link?esc(mine.link):'<span class="mu">belum tersedia, akan diisi admin setelah undanganmu selesai</span>'}</p><label>Format link tamu<select id="g_f"><option value="q"${h?"":" selected"}>…?to=Nama (umum)</option><option value="h"${h?" selected":""}>…#tamu-Nama</option></select></label><p class="sm mu" style="word-break:break-all;margin-top:8px">Contoh: ${esc(G[0]&&mine.link?gl(G[0]):"isi link dan tambah tamu dulu")}</p></div>
  <div class="sec2">Tambah tamu</div><div class="card"><div class="g2"><label style="margin-top:0">Nama tamu<input id="g_n" placeholder="Bapak Budi &amp; Keluarga"></label><label style="margin-top:0">Nomor WhatsApp<input id="g_w" inputmode="tel" placeholder="0812…"></label></div><p style="margin-top:14px"><button data-act="ga">Tambah</button></p><details id="g_bd" style="margin-top:12px"><summary>Impor banyak tamu</summary><p class="sm mu" style="margin:8px 0 0">Dari Excel: kolom A berisi nama tamu, kolom B nomor WhatsApp (file .xlsx atau .csv). Baris judul di atas dilewati otomatis.</p><div class="row" style="gap:8px;margin:10px 0 0"><label class="upl mini" style="margin:0"><input type="file" id="g_file" accept=".xlsx,.xlsm,.csv,.txt">⬆ Pilih file Excel</label><button type="button" class="ghost sm" data-act="gtpl">Unduh contoh</button></div><label>Atau tempel: satu tamu per baris, Nama, Nomor<textarea id="g_b" rows="5" placeholder="Budi Santoso, 0812345678&#10;Siti Aminah, 0857…"></textarea></label><p style="margin-top:10px"><button class="ghost sm" data-act="gi">Impor</button></p></details></div>
  <div class="sec2">Pesan WhatsApp</div><div class="card"><label style="margin-top:0">Pakai {nama}, {link}, {mempelai}<textarea id="g_t" rows="9">${esc(mine.tpl||TPL)}</textarea></label></div>
- <div class="sec2">Tamu (${G.length} · terkirim ${n})</div>${G.length?G.map((g,i)=>`<div class="card"><div class="row between"><b>${esc(g.n)}</b>${g.s?'<span class="badge b3">Terkirim</span>':""}</div><p class="sm mu" style="margin:2px 0 12px">${g.w?"+"+esc(g.w):"Tanpa nomor WA (pilih kontak saat kirim)"}</p><div class="row"><button class="ghost sm" data-act="gc" data-i="${i}">Salin link</button><button class="sm" data-act="gw" data-i="${i}">Kirim WhatsApp</button><button class="danger sm" data-act="gd" data-i="${i}">Hapus</button></div></div>`).join(""):'<p class="mu c">Belum ada tamu.</p>'}`}
+ <div class="sec2">Tamu</div>${vGList(G,n)}`}
 
 /* ============ VIEW: ADMIN ============ */
 function thRow(x){return`<div class="tr" data-tr><input class="tn" data-tf="n" type="number" inputmode="numeric" placeholder="No" aria-label="Nomor tema" value="${esc(x.n||"")}"><input data-tf="name" placeholder="Nama tema (opsional)" aria-label="Nama tema" value="${esc(x.name||"")}"><button type="button" class="danger sm" data-act="trdel" aria-label="Hapus tema">✕</button><input data-tf="u" placeholder="Link preview khusus (opsional)" aria-label="Link preview" value="${esc(x.u||"")}"><input data-tf="img" type="hidden" value="${esc(x.img||"")}"><div class="timg">${x.img?`<img src="${esc(x.img)}" alt="" loading="lazy">`:"<i>Belum ada gambar kartu</i>"}<label class="upl mini"><input type="file" accept="image/*" data-aup="card">＋ Gambar kartu</label></div></div>`}
@@ -1973,10 +1986,10 @@ function render(){
  if(mine&&mine.status==="Menunggu DP")mine.status="Menunggu Pembayaran";all.forEach(o=>{if(o.status==="Menunggu DP")o.status="Menunggu Pembayaran"});
  $("#hb").textContent=tab==="dash"?"Katalog":(tab==="adm"||tab==="admcat"||tab==="aedit")?"Situs":(mine?"Dashboard":"Masuk");
  const isA=tab==="adm"||tab==="admcat"||tab==="aedit",DK=isA?[["apesan",I.user,"Pesanan"],["acat",I.tag,"Katalog &amp; Harga"],["asitus",I.home,"Situs"]]:[["kat",I.home,"Katalog"],["harga",I.tag,"Harga"],["dash",I.user,mine?"Akun":"Pesan"]];
- $("#dock").classList.toggle("adm",isA);document.body.classList.toggle("isadm",isA);
+ $("#dock").classList.toggle("adm",isA);document.body.classList.toggle("isadm",isA||(tab==="dash"&&dtab==="tamu"));
  $("#dock").innerHTML=DK.map(x=>`<button data-act="nav" data-v="${x[0]}" class="${(isA?(x[0]==="apesan"&&(tab==="adm"||tab==="aedit"))||(x[0]==="acat"&&tab==="admcat"):(tab==="kat"&&x[0]==="kat")||(tab==="dash"&&x[0]==="dash"))?"on":""}">${x[1]}${x[2]}</button>`).join("");
  $("#app").innerHTML=(tab==="kat"?vKat():tab==="dash"?vDash():tab==="admcat"?vAdmCat():tab==="aedit"?vAdmEdit():vAdm())+(err?`<p class="sm c" style="color:#d33;margin-top:14px">${esc(err)}</p>`:"");
- reveal();
+ reveal();if($("#glist"))gApply();
 }
 let io;function reveal(){if(io)io.disconnect();io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});$$(".rv:not(.in)").forEach(el=>io.observe(el))}
 function go(t,anchor){tab=t;render();if(anchor){const el=$(anchor);el&&el.scrollIntoView({behavior:"smooth",block:"start"})}else scrollTo({top:0})}
@@ -2029,9 +2042,11 @@ const ACT={
  add(el){collect();const k=el.dataset.k==="ev"?"events":"banks";mine.data[k].push({});dirty=true;render()},
  rm(el){collect();mine.data[el.dataset.k==="ev"?"events":"banks"].splice(+el.dataset.i,1);dirty=true;render()},
  async pdel(el){mine.photos.splice(+el.dataset.i,1);await saveMine("Foto dihapus");render()},
+ gfl(el){gfl=el.dataset.f;$$("#gchips button").forEach(b=>b.classList.toggle("on",b.dataset.f===gfl));gApply()},
+ async gnext(){const G=mine.guests||[],i=G.findIndex(g=>!g.s);if(i<0)return toast("Semua tamu sudah dikirimi ✓");if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");const g=G[i];open("https://wa.me/"+wa62(g.w)+"?text="+encodeURIComponent(gmsg(g)),"_blank");g.s=1;await saveMine("Ditandai terkirim ✓");render()},
  async gc(el){const g=mine.guests[+el.dataset.i];if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");copy(gl(g))},
  async gw(el){const g=mine.guests[+el.dataset.i];if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");open("https://wa.me/"+wa62(g.w)+"?text="+encodeURIComponent(gmsg(g)),"_blank");g.s=1;await saveMine("Ditandai terkirim ✓");render()},
- async gd(el){mine.guests.splice(+el.dataset.i,1);await saveMine("Tamu dihapus");render()},
+ async gd(el){if(!confirm("Hapus tamu ini?"))return;mine.guests.splice(+el.dataset.i,1);await saveMine("Tamu dihapus");render()},
  async ga(){const nm=$("#g_n").value.trim();if(!nm)return toast("Isi nama tamu");(mine.guests=mine.guests||[]).push({n:nm,w:wa62($("#g_w").value)});await saveMine("Tamu ditambahkan ✓");render()},
  async gi(){mine.guests=mine.guests||[];const seen=new Set(mine.guests.map(g=>String(g.n).toLowerCase()+"|"+(g.w||""))),LIM=46000;let c=0,dup=0,cap=0,sz=JSON.stringify(mine.guests).length;
   $("#g_b").value.split("\n").forEach(l=>{const m=l.trim().match(/^(.*?)[\s,;|\t]*(\+?\d[\d\s-]{7,})?$/);if(!m||!m[1].trim())return;const g={n:m[1].trim(),w:wa62(m[2])},k=g.n.toLowerCase()+"|"+g.w;if(seen.has(k)){dup++;return}const add=JSON.stringify(g).length+1;if(sz+add>LIM){cap++;return}seen.add(k);sz+=add;mine.guests.push(g);c++});
