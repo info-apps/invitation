@@ -555,6 +555,7 @@ var CFG = {
     "full": "Mohamad Muhdhor Subakir ",
     "parents": "Putra dari Bapak Untung Yuseno dan Ibu Gemi Astutik"
   },
+  "swap": 1,
   "date": "2026-12-05T18:00:00+07:00",
   "dateLabel": "05 . 12 . 2026",
   "events": [
@@ -651,6 +652,7 @@ var KINDS = {
 };
 var KD = KINDS[CFG.kind] || null;
 if (KD && window.__demo) { CFG.events = [{title:KD.evt, day:"Sabtu, 06 Maret 2027", time:"10.00 WIB", place:"Kediaman Keluarga", addr:CFG.events[0] ? CFG.events[0].addr : "", map:"https://maps.google.com/?q=Wonosobo"}]; CFG.story = []; }
+if (CFG.swap && !KD) { var _b = CFG.bride; CFG.bride = CFG.groom; CFG.groom = _b; var _ph = CFG.photos; if (_ph) { var _x = _ph.bride; _ph.bride = _ph.groom; _ph.groom = _x; } } // pria dulu, lalu wanita
 var both = KD ? CFG.bride.name : CFG.bride.name + " & " + CFG.groom.name;
 document.querySelectorAll(".nm").forEach(function(e){e.textContent = both});
 $("cDate").textContent = $("hDate").textContent = CFG.dateLabel;
