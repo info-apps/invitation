@@ -845,6 +845,7 @@ var KINDS = {
 };
 var KD = KINDS[CFG.kind] || null;
 if (KD && window.__demo) { CFG.events = [{title:KD.evt, day:"Sabtu, 06 Maret 2027", time:"10.00 WIB", place:"Kediaman Keluarga", addr:CFG.events[0] ? CFG.events[0].addr : "", map:"https://maps.google.com/?q=Wonosobo"}]; CFG.story = []; }
+if (CFG.swap && !KD) { var _b = CFG.bride; CFG.bride = CFG.groom; CFG.groom = _b; var _ph = CFG.photos; if (_ph) { var _x = _ph.bride; _ph.bride = _ph.groom; _ph.groom = _x; } } // pria dulu, lalu wanita
 var both = KD ? CFG.bride.name : CFG.bride.name + " & " + CFG.groom.name;
 document.querySelectorAll(".nm").forEach(function(e){e.textContent = both});
 $("cDate").textContent = $("hDate").textContent = CFG.dateLabel;
@@ -1816,6 +1817,7 @@ const INV=$("#inv").textContent.split("<\\/scr"+"ipt>").join("<"+"/scr"+"ipt>");
 function wishCfg(o){var u=/^https?:\/\//.test(API_URL)?API_URL:(o.wapi||"");return o.cat==="sp"&&o.wid&&u?"window.__wid="+JSON.stringify(o.wid)+";window.__api="+JSON.stringify(u).replace(/</g,"\\u003c")+";":""}
 function buildInv(o){var d=o.data||{},P=function(k){return(o.photos||[]).filter(function(p){return p.k===k}).map(function(p){return p.url})},tg=d.tgl||"";
  var cfg={bride:{name:d.wn||d.wf||"",full:d.wf||d.wn||"",parents:d.wp||""},groom:{name:d.pn||d.pf||"",full:d.pf||d.pn||"",parents:d.pp||""},
+  swap:d.sw?1:0,
   date:tg?tg.slice(0,16)+":00+07:00":"",dateLabel:tg?tg.slice(8,10)+" . "+tg.slice(5,7)+" . "+tg.slice(0,4):"",
   events:(d.events||[]).map(function(e){return{title:e.t||"Acara",day:e.day||"",time:e.time||"",place:e.place||"",addr:e.addr||"",map:e.map||""}}),
   live:d.live||"",video:(hasVid(o.cat)&&ytIdOf(d.vid))?String(d.vid).trim():"",story:(d.story||[]).map(function(x){return{t:x.t||"",p:x.p||""}}),
@@ -1826,7 +1828,7 @@ function buildInv(o){var d=o.data||{},P=function(k){return(o.photos||[]).filter(
  var KT={wedding:"The Wedding of",ulangtahun:"Undangan Ulang Tahun",aqiqah:"Undangan Aqiqah",khitan:"Undangan Khitan",halal:"Undangan Halalbihalal",umum:"Undangan"},kk=cfg.kind||"wedding",nmx=kk==="wedding"?[cfg.bride.name,cfg.groom.name].filter(Boolean).join(" & "):cfg.bride.name,ttl=(KT[kk]||KT.umum)+" "+nmx,dsc="Undangan digital"+(cfg.dateLabel?" · "+cfg.dateLabel.split(" . ").join("/"):"");
  h=h.replace("<title>The Wedding of Shintia & Bhima</title>","<title>"+esc(ttl)+'</title><meta property="og:title" content="'+esc(ttl)+'"><meta property="og:description" content="'+esc(dsc)+'"><meta property="og:type" content="website">'+(cfg.photos.cover?'<meta property="og:image" content="'+esc(cfg.photos.cover)+'">':""));
  return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__sp="+(o.cat==="sp"?1:0)+";window.__gn="+galMax(o.cat)+";"+wishCfg(o)+"window.__fx='"+fxId(cat(o.cat))+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
-const slug=o=>(([o.data&&(o.data.wn||o.data.wf),o.data&&(o.data.pn||o.data.pf)].filter(Boolean).join("-")||"undangan").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
+const slug=o=>(((o.data&&o.data.sw?[o.data&&(o.data.pn||o.data.pf),o.data&&(o.data.wn||o.data.wf)]:[o.data&&(o.data.wn||o.data.wf),o.data&&(o.data.pn||o.data.pf)]).filter(Boolean).join("-")||"undangan").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
 function saveFile(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ============ PREVIEW ============ */
@@ -1901,7 +1903,7 @@ function vData(c){
  const evs=d.events||(nw?[{t:kl.ev}]:[{t:"Akad Nikah"},{t:"Resepsi"}]),sts=d.story||[{t:"Awal Bertemu"},{t:"Menjalin Kasih"},{t:"Memutuskan Menikah"}],bks=d.banks||[{}];
  const rm=(k,n,i)=>n>1?`<button class="danger sm" data-act="rm" data-k="${k}" data-i="${i}">Hapus</button>`:"";
  return`<div id="frm"><div class="card"><label style="margin-top:0">Tema (${esc(c.n)})<select id="d_t">${themeOpts(c,mine.theme)}</select></label></div>
- <div class="sec2">${nw?"Data acara":"Mempelai"}</div><div class="card">${nw?`<label style="margin-top:0">Jenis acara<input value="${esc(tl(c,+mine.theme))}" disabled></label>${f("wn",kl.n)}${f("wf","Nama lengkap")}${f("wp",kl.p)}`:`<p class="sm mu">💐 Mempelai wanita</p>${f("wn","Nama panggilan")}${f("wf","Nama lengkap")}${f("wp","Orang tua (contoh: Putri dari Bapak … dan Ibu …)")}<p class="sm mu" style="margin-top:18px">🤵 Mempelai pria</p>${f("pn","Nama panggilan")}${f("pf","Nama lengkap")}${f("pp","Orang tua (contoh: Putra dari Bapak … dan Ibu …)")}`}${f("tgl","Tanggal dan jam acara utama (untuk hitung mundur)","datetime-local")}</div>
+ <div class="sec2">${nw?"Data acara":"Mempelai"}</div><div class="card">${nw?`<label style="margin-top:0">Jenis acara<input value="${esc(tl(c,+mine.theme))}" disabled></label>${f("wn",kl.n)}${f("wf","Nama lengkap")}${f("wp",kl.p)}`:`<div class="row between" style="margin:0 0 4px;gap:10px"><span class="sm">Urutan di undangan: <b>${d.sw?"Pria & Wanita":"Wanita & Pria"}</b></span><button type="button" class="ghost sm" data-act="swapmp">⇄ Tukar posisi</button></div>${(()=>{const mp=(k,first)=>k==="w"?`<p class="sm mu"${first?"":' style="margin-top:18px"'}>💐 Mempelai wanita</p>${f("wn","Nama panggilan")}${f("wf","Nama lengkap")}${f("wp","Orang tua (contoh: Putri dari Bapak … dan Ibu …)")}`:`<p class="sm mu"${first?"":' style="margin-top:18px"'}>🤵 Mempelai pria</p>${f("pn","Nama panggilan")}${f("pf","Nama lengkap")}${f("pp","Orang tua (contoh: Putra dari Bapak … dan Ibu …)")}`;return d.sw?mp("p",1)+mp("w",0):mp("w",1)+mp("p",0)})()}`}${f("tgl","Tanggal dan jam acara utama (untuk hitung mundur)","datetime-local")}</div>
  <div class="sec2">Acara</div>${evs.map((e,i)=>`<div class="card" data-g="ev"><div class="row between"><b>Acara ${i+1}</b>${rm("ev",evs.length,i)}</div>${g("t","Nama acara (Akad Nikah, Resepsi, …)",e.t)}${g("day","Hari, tanggal (contoh: Sabtu, 06 Maret 2027)",e.day)}${g("time","Jam (contoh: 08.00 WIB)",e.time)}${g("place","Nama tempat",e.place)}${g("addr","Alamat",e.addr)}${g("map","Link Google Maps",e.map,"url")}</div>`).join("")}<button class="ghost sm" data-act="add" data-k="ev">+ Tambah acara</button>
  ${nw?"":`<div class="sec2">Love Story</div>${sts.map(s=>`<div class="card" data-g="st">${g("t","Judul",s.t)}<label>Cerita<textarea data-k="p" rows="3">${esc(s.p)}</textarea></label></div>`).join("")}`}
  <div class="sec2">Lagu</div><div class="card">${f("lagu","Judul lagu / artis")}${f("laguurl","Link lagu (mp3 langsung, Google Drive, atau YouTube)","url")}<p class="sm mu" style="margin-top:8px">Google Drive: bagikan dengan akses “Siapa saja yang memiliki link”. Link Spotify, Apple Music, dan SoundCloud tidak didukung. File mp3 langsung paling andal, terutama di iPhone.</p></div>
@@ -1916,7 +1918,7 @@ const TPL="Assalamualaikum Wr. Wb.\n\nKepada Yth.\n{nama}\n\nTanpa mengurangi ra
 function gl(g){let u=(mine.link||"").trim(),i=u.indexOf("#"),h="";if(i>-1){h=u.slice(i);u=u.slice(0,i)}const nm=g.n.trim();
  if(mine.fmt==="h")return u+"#tamu-"+encodeURIComponent(nm.replace(/\s+/g,"-"));
  return u+(u.indexOf("?")>-1?"&":"?")+"to="+encodeURIComponent(nm)+h}
-function gmsg(g){const d=mine.data||{};return(mine.tpl||TPL).split("{nama}").join(g.n).split("{link}").join(gl(g)).split("{mempelai}").join([d.wn,d.pn].filter(Boolean).join(" & "))}
+function gmsg(g){const d=mine.data||{};return(mine.tpl||TPL).split("{nama}").join(g.n).split("{link}").join(gl(g)).split("{mempelai}").join((d.sw?[d.pn,d.wn]:[d.wn,d.pn]).filter(Boolean).join(" & "))}
 function copy(s,m){const ok=()=>toast(m||"Link tersalin ✓"),fb=()=>{const a=document.createElement("textarea");a.value=s;document.body.appendChild(a);a.select();let r=false;try{r=document.execCommand("copy")}catch(x){}a.remove();r?ok():prompt("Salin link ini:",s)};
  navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(s).then(ok,fb):fb()}
 function vTamu(){
@@ -2044,6 +2046,7 @@ const ACT={
  async pdel(el){mine.photos.splice(+el.dataset.i,1);await saveMine("Foto dihapus");render()},
  gfl(el){gfl=el.dataset.f;$$("#gchips button").forEach(b=>b.classList.toggle("on",b.dataset.f===gfl));gApply()},
  async gnext(){const G=mine.guests||[],i=G.findIndex(g=>!g.s);if(i<0)return toast("Semua tamu sudah dikirimi ✓");if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");const g=G[i];open("https://wa.me/"+wa62(g.w)+"?text="+encodeURIComponent(gmsg(g)),"_blank");g.s=1;await saveMine("Ditandai terkirim ✓");render()},
+ async swapmp(){collect();mine.data=mine.data||{};mine.data.sw=mine.data.sw?0:1;dirty=true;await saveMine(mine.data.sw?"Urutan: pria dulu ✓":"Urutan: wanita dulu ✓");render()},
  async gc(el){const g=mine.guests[+el.dataset.i];if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");copy(gl(g))},
  async gw(el){const g=mine.guests[+el.dataset.i];if(!(mine.link||"").trim())return toast("Link undangan belum tersedia (diisi admin)");open("https://wa.me/"+wa62(g.w)+"?text="+encodeURIComponent(gmsg(g)),"_blank");g.s=1;await saveMine("Ditandai terkirim ✓");render()},
  async gd(el){if(!confirm("Hapus tamu ini?"))return;mine.guests.splice(+el.dataset.i,1);await saveMine("Tamu dihapus");render()},
