@@ -87,10 +87,11 @@ input[type=checkbox]{display:inline-block;width:auto;margin:0 6px 0 0}
 .bento b{display:block;font:700 .98rem var(--fh);margin-bottom:3px}.bento p{font-size:.82rem;color:var(--mu);line-height:1.45}
 .bento .hot{background:var(--grad);color:#fff;border:0}.bento .hot p{color:rgba(255,255,255,.85)}
 /* category pills */
-.cats{position:sticky;top:68px;z-index:30;display:flex;gap:8px;overflow-x:auto;padding:10px 4px;margin:0 -4px 14px;scrollbar-width:none;justify-content:flex-start}
-@media(min-width:700px){.cats{justify-content:center}}
+.cats{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0;margin:0 0 14px;justify-content:center}
+@media(min-width:700px){.cats{position:sticky;top:68px;z-index:30;padding:10px 4px;margin:0 -4px 14px}}
 .cats::-webkit-scrollbar{display:none}
-.cats button{flex:none;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);backdrop-filter:blur(10px);padding:10px 18px}
+.cats button{flex:1 1 auto;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);backdrop-filter:blur(10px);padding:10px 14px}
+@media(min-width:700px){.cats button{flex:none;padding:10px 18px}}
 .cats button.on{background:var(--grad);color:#fff;box-shadow:0 10px 22px -10px var(--ac)}
 .catd{text-align:center;color:var(--mu);margin:0 0 18px}
 .tg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
@@ -793,7 +794,7 @@ var CFG = {
   ],
   banks: [{bank:"Bank BCA", no:"0000000000", name:"Shintia Putri"}, {bank:"Bank Mandiri", no:"0000000000", name:"Bhima Putra"}],
   photos: {cover:"", bride:"", groom:"", closing:"", gallery:[]},   // isi alamat gambar; kosong = kotak foto
-  wa: "6281234567890",   // nomor WhatsApp tanpa +
+  wa: "6282139932041",   // nomor WhatsApp tanpa +
   music: ""              // alamat file mp3
 };
 // ===========================================
@@ -1891,8 +1892,8 @@ function vDash(){
  const c=cat(mine.cat)||{id:mine.cat,n:mine.cat,p:0,th:[],g:"",pn:"",nw:false},si=Math.max(0,ST.indexOf(mine.status));
  return`<div style="padding-top:22px"><div class="card hd rv in"><div><span class="mu sm">Halo,</span><h2>${esc(mine.name)}</h2><p class="mu sm" style="margin-top:6px">${esc(c.n)} · ${esc(tl(c,+mine.theme))} · ${rp(c.p)}</p></div><span class="badge b${si}">${esc(mine.status)}</span></div>
  <ol class="steps" style="margin:-4px 8px 18px">${ST.map((s,i)=>`<li class="${i<si?"d":i===si?"n":""}">${s}</li>`).join("")}</ol>
- ${vBayar(c)}
  <div class="row between" style="margin-bottom:14px"><div class="row">${mine.link?`<a class="btn sm" href="${esc(mine.link)}" target="_blank" rel="noopener">Lihat undangan</a>`:'<span class="pill">Link undangan menyusul dari admin</span>'}</div><button class="ghost sm" data-act="logout">Keluar</button></div>
+ ${vBayar(c)}
  <div class="seg">${[["data","Data"],["foto","Foto"],["tamu","Tamu"]].map(x=>`<button data-act="dtab" data-t="${x[0]}" class="${dtab===x[0]?"on":""}">${x[1]}</button>`).join("")}</div>
  ${dtab==="data"?vData(c):dtab==="foto"?vFoto(c):vTamu()}</div>`}
 function vData(c){
