@@ -202,6 +202,8 @@ body.isadm #wa{display:none}
 .gtx{flex:1;min-width:0}.gtx b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gtx .sm{display:block}
 .gok{color:#1e9e5a;font-weight:800}
 .ig{min-width:38px;height:38px;padding:0;border-radius:12px;display:grid;place-items:center;background:var(--in);color:var(--ink);box-shadow:none;border:1px solid var(--ln);font-size:.95rem}.ig.w{background:#25d366;color:#fff;border-color:#25d366;font:800 .7rem system-ui,sans-serif}.ig.d{color:#d33}
+.nvp{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;padding:6px;border-radius:999px;margin:10px 0 4px;border:1px solid var(--ln)}
+.nvp span{font:500 .78rem system-ui,sans-serif;padding:8px 11px;border-radius:999px}
 .chipset{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .chipset button{background:var(--in);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln);padding:7px 14px;font-size:.78rem}
 .chipset button.on{background:var(--grad);color:#fff}
@@ -483,6 +485,12 @@ html.cf .circ>[data-img]{border-radius:inherit}
 .vplay span::after,.vph span::after{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .vph{display:grid;place-items:center;align-content:end;padding-bottom:16px;background:linear-gradient(135deg,rgba(20,20,24,.78),rgba(40,36,44,.92));color:#fff;font:500 .92rem/1.4 var(--sans)}
 .vph small{opacity:.75;font-size:.76rem}
+/* warna menu bawah per tema (diatur admin) */
+html[data-nvc] nav{background:var(--nv-bg,var(--surface))!important}
+html[data-nvc] nav a{color:var(--nv-fg,var(--muted))!important}
+html[data-nvc] nav a.on{background:var(--nv-on,var(--accent))!important;color:var(--nv-onfg,var(--bg))!important}
+/* cincin & hiasan bingkai tidak boleh menutupi foto (agar foto bisa diketuk/diganti) */
+.circ::before,.arch::before,.arch::after{pointer-events:none}
 /* responsif: layar lebar & layar kecil */
 html{overflow-x:hidden}
 #couple>h2{font-size:clamp(1.4rem,7.6vw,2.6rem)!important;overflow-wrap:anywhere}
@@ -967,7 +975,11 @@ $("open").addEventListener("click", function(){ if (!playing) playM(); });
 $("open").onclick = function(){
   $("cover").classList.add("open"); document.body.classList.remove("lock"); scrollTo(0,0);
   setTimeout(function(){$("cover").classList.add("gone")}, still ? 0 : 1500);
-  $("nav").classList.add("on");
+  (function(){var N = window.__nav; if (!N) return; var ok = function(v){ return /^#[0-9a-fA-F]{6}$/.test(v || ""); }, r = document.documentElement, any = false;
+  [["bg","--nv-bg"],["fg","--nv-fg"],["on","--nv-on"],["onfg","--nv-onfg"]].forEach(function(x){ if (ok(N[x[0]])) { r.style.setProperty(x[1], N[x[0]]); any = true; } });
+  if (any) r.setAttribute("data-nvc", "1");
+})();
+$("nav").classList.add("on");
   if (MU && !MU.bad) $("music").style.display = "block";
 };
 $("music").onclick = function(){ playing ? pauseM() : playM(); };
@@ -1578,7 +1590,7 @@ onScroll();
     return [].slice.call(a);
   }
   function picTarget(t){
-    var d = t.closest("[data-img]");
+    var host = t.closest(".circ,.arch"), d = t.closest("[data-img]") || (host && host.querySelector("[data-img]"));
     if (d) { var s = {cover: 0, bride: 1, groom: 2, closing: 3}[d.getAttribute("data-img")]; if (s !== undefined) return {kind: "ph", slot: s}; }
     var gl = galList(), gi = -1; gl.forEach(function(el, i){ if (el === t || el.contains(t)) gi = i; });
     return gi >= 0 ? {kind: "ph", slot: 4, g: gi} : null;
@@ -1678,6 +1690,11 @@ const parseBgs=t=>{const o={};String(t||"").split("\n").forEach(l=>{const m=/^\s
 let HERO=["","",""];
 const BGP=[["cover","Sampul (pintu)"],["home","Beranda"],["verse","Ayat"],["couple","Mempelai"],["countdown","Hitung mundur"],["event","Acara"],["story","Kisah"],["gallery","Galeri"],["rsvp","RSVP"],["gift","Hadiah"],["wishes","Ucapan"],["thanks","Penutup"]];
 let BGD=null;
+const NVD={bg:"#ffffff",fg:"#6b7280",on:"#1f2937",onfg:"#ffffff"};
+function nvPrev(box){const g=k=>box.querySelector('[data-nv="'+k+'"]').value,p=box.querySelector(".nvp");if(!p)return;p.style.background=g("bg");[...p.children].forEach((s,i)=>{s.style.background=i===0?g("on"):"transparent";s.style.color=i===0?g("onfg"):g("fg")})}
+function nvLoad(box){const n=+(box.querySelector("[data-nvn]").value||0),c=cat(box.dataset.cid),v=c&&c.nav&&c.nav[n],o=v||NVD;["bg","fg","on","onfg"].forEach(k=>{box.querySelector('[data-nv="'+k+'"]').value=/^#[0-9a-fA-F]{6}$/.test(o[k]||"")?o[k]:NVD[k]});const st=box.querySelector(".nvst");if(st)st.textContent=v?"Warna khusus tema "+n+" aktif.":"Tema "+n+" memakai warna bawaan.";nvPrev(box)}
+document.addEventListener("input",e=>{const t=e.target;if(t&&t.dataset&&t.dataset.nv!==undefined)nvPrev(t.closest("[data-cc]"))});
+document.addEventListener("change",e=>{const t=e.target;if(t&&t.dataset&&t.dataset.nvn!==undefined)nvLoad(t.closest("[data-cc]"))});
 let BGM=null;
 function syncDraft(cid){const c=cat(cid);if(!c||!edc)return;const e=edc.find(x=>x.id===cid);if(!e)return;e.bgs=JSON.parse(JSON.stringify(c.bgs||{}));(e.th||[]).forEach(t=>{const s=(c.th||[]).find(x=>x.n===t.n);if(s&&s.img!==undefined)t.img=s.img})}
 function bgGuess(name,used){const nm=name.toLowerCase().replace(/\.[^.]+$/,""),m=nm.match(/^0*(\d{1,2})(?!\d)/);if(m&&+m[1]<12&&!used.has(+m[1]))return +m[1];
@@ -1857,14 +1874,14 @@ function buildInv(o){var d=o.data||{},P=function(k){return(o.photos||[]).filter(
  ['CFG.bride.name = N[0]; CFG.bride.full = N[0] + " Putri"; CFG.groom.name = N[1]; CFG.groom.full = N[1] + " Putra";','CFG.date = "2027-03-06T08:00:00+07:00"; CFG.dateLabel = "06 . 03 . 2027";','CFG.events.forEach(function(e){e.day = "Sabtu, 06 Maret 2027"});'].forEach(function(x){h=h.split(x).join("")});
  var KT={wedding:"The Wedding of",ulangtahun:"Undangan Ulang Tahun",aqiqah:"Undangan Aqiqah",khitan:"Undangan Khitan",halal:"Undangan Halalbihalal",umum:"Undangan"},kk=cfg.kind||"wedding",nmx=kk==="wedding"?[cfg.bride.name,cfg.groom.name].filter(Boolean).join(" & "):cfg.bride.name,ttl=(KT[kk]||KT.umum)+" "+nmx,dsc="Undangan digital"+(cfg.dateLabel?" · "+cfg.dateLabel.split(" . ").join("/"):"");
  h=h.replace("<title>The Wedding of Shintia & Bhima</title>","<title>"+esc(ttl)+'</title><meta property="og:title" content="'+esc(ttl)+'"><meta property="og:description" content="'+esc(dsc)+'"><meta property="og:type" content="website">'+(cfg.photos.cover?'<meta property="og:image" content="'+esc(cfg.photos.cover)+'">':""));
- return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__sp="+(o.cat==="sp"?1:0)+";window.__gn="+galMax(o.cat)+";"+wishCfg(o)+"window.__fx='"+fxId(cat(o.cat))+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
+ return h.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+(+o.theme||1)+"';window.__sp="+(o.cat==="sp"?1:0)+";window.__gn="+galMax(o.cat)+";window.__nav="+JSON.stringify((((cat(o.cat)||{}).nav||{})[+o.theme||1])||null)+";"+wishCfg(o)+"window.__fx='"+fxId(cat(o.cat))+"';window.__bg="+JSON.stringify(((cat(o.cat)||{}).bgs||{})[+o.theme||1]||{}).replace(/</g,"\\u003c")+"<"+"/scr"+"ipt>")}
 const slug=o=>(((o.data&&o.data.sw?[o.data&&(o.data.pn||o.data.pf),o.data&&(o.data.wn||o.data.wf)]:[o.data&&(o.data.wn||o.data.wf),o.data&&(o.data.pn||o.data.pf)]).filter(Boolean).join("-")||"undangan").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
 function saveFile(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ============ PREVIEW ============ */
 let pvN=null;
 function openPv(n){const c=cat(cur);pvN=n;$("#pvt").textContent=tl(c,n);$("#pvo").style.display=DEMO_URL?"":"none";$("#pvo").href=DEMO_URL+"#tema-"+n;
- $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__sp="+(c.id==="sp"?1:0)+";window.__gn="+galMax(c.id)+";window.__vd="+(hasVid(c.id)?1:0)+";window.__demo=1;window.__txt="+JSON.stringify(((c.txt||{})[n])||[]).replace(/</g,"\\u003c")+";"+(admin?"window.__adm=1;":"")+"window.__fx='"+fxId(c)+"';window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(phFor(c,n)).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
+ $("#pvf").srcdoc=INV.replace("<head>","<head><scr"+"ipt>window.__t='#tema-"+n+"';window.__sp="+(c.id==="sp"?1:0)+";window.__gn="+galMax(c.id)+";window.__vd="+(hasVid(c.id)?1:0)+";window.__nav="+JSON.stringify(((c.nav||{})[n])||null)+";window.__demo=1;window.__txt="+JSON.stringify(((c.txt||{})[n])||[]).replace(/</g,"\\u003c")+";"+(admin?"window.__adm=1;":"")+"window.__fx='"+fxId(c)+"';window.__bg="+JSON.stringify((c.bgs||{})[n]||{}).replace(/</g,"\\u003c")+";window.__ph="+JSON.stringify(phFor(c,n)).replace(/</g,"\\u003c")+";window.__k='"+kindOfTheme(c,n)+"'<"+"/scr"+"ipt>");$("#pv").hidden=false;document.body.style.overflow="hidden"}
 function closePv(){$("#pv").hidden=true;$("#pvf").srcdoc="";document.body.style.overflow=""}
 addEventListener("keydown",e=>{if(e.key==="Escape")closePv()});
 addEventListener("message",async e=>{const f=$("#pvf"),d=e.data;if(!f||e.source!==f.contentWindow||!d||!admin||pvN==null)return;
@@ -1966,7 +1983,12 @@ function catEd(c,i){const th=(c.th||[]).map(x=>[x.n,x.name||"",x.u||"",x.img||""
  <details class="sub" open><summary>Paket &amp; harga</summary><label>Nama kategori<input data-cf="n" value="${esc(c.n)}"></label><div class="g2"><label>Nama paket<input data-cf="pn" value="${esc(c.pn)}"></label><label>Harga (Rp)<input data-cf="p" type="number" inputmode="numeric" value="${esc(c.p)}"></label></div><div class="g2"><label>Fasilitas galeri<input data-cf="g" value="${esc(c.g)}"></label><label>Maks. foto galeri<input data-cf="gl" type="number" min="1" max="30" inputmode="numeric" value="${galMax(c.id)}"></label></div><label><input data-cf="nw" type="checkbox"${c.nw?" checked":""}>Non wedding (tanpa data mempelai)</label><label><input data-cf="vd" type="checkbox"${vdOf(c)?" checked":""}>Video prewedding (customer menautkan link YouTube)</label></details>
  <details class="sub" open><summary>Daftar tema · <span data-tcount>${(c.th||[]).length}</span></summary><p class="mu sm" style="margin-top:6px">Nomor tema harus sama dengan nomor tema di undangan.</p><textarea data-cf="th" hidden>${esc(th)}</textarea><div data-trs>${(c.th||[]).map(thRow).join("")}</div><button type="button" class="ghost sm" data-act="thadd" style="margin-top:12px">＋ Tambah tema</button></details>
  <details class="sub"><summary>Foto contoh preview</summary><p class="sm mu" style="margin:6px 0 0">Foto di bawah jadi bawaan semua tema di kategori ini. Untuk foto yang <b>berbeda per tema</b>: buka preview tema, aktifkan <b>✎ Edit tulisan</b>, lalu ketuk fotonya.</p><label>Satu link per baris: sampul, mempelai wanita, mempelai pria, penutup, lalu galeri (baris kosong = foto bawaan)<textarea data-cf="ph" rows="5">${esc((c.ph||[]).join("\n"))}</textarea></label><div class="g2" style="margin-top:10px"><label>Posisi foto contoh<select data-ps><option value="0">Sampul</option><option value="1">Mempelai wanita</option><option value="2">Mempelai pria</option><option value="3">Penutup</option><option value="g">Tambah ke galeri</option></select></label><label class="upl" style="margin:22px 0 0;padding:12px"><input type="file" accept="image/*" data-aup="ph">＋ Unggah foto contoh</label></div><div class="g2" style="margin-top:12px"><label>No. tema<input data-phn type="number" inputmode="numeric" placeholder="mis. 1"></label><button type="button" class="ghost sm" data-act="phreset" style="margin-top:22px">Kembalikan foto tema ini ke bawaan kategori</button></div></details>
- <details class="sub"><summary>Latar panel per tema</summary><label>Satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label><button type="button" class="ghost sm" data-act="bgguide" style="margin-top:10px">🖼 Kelola latar tema ini (12 panel)</button></details>
+ <details class="sub"><summary>Warna menu bawah (per tema)</summary><p class="sm mu" style="margin:6px 0 0">Atur warna tombol menu <b>Beranda, Mempelai, Acara, Galeri, Ucapan</b> untuk satu tema. Cocok saat menambah tema baru. Tersimpan langsung untuk tema yang dipilih.</p>
+<label>No. tema<input data-nvn type="number" inputmode="numeric" value="${c.th&&c.th[0]?c.th[0].n:""}"></label>
+<div class="g2"><label>Latar menu<input type="color" data-nv="bg" value="#ffffff"></label><label>Teks menu<input type="color" data-nv="fg" value="#6b7280"></label><label>Tombol aktif<input type="color" data-nv="on" value="#1f2937"></label><label>Teks tombol aktif<input type="color" data-nv="onfg" value="#ffffff"></label></div>
+<div class="nvp"><span>Beranda</span><span>Mempelai</span><span>Acara</span><span>Galeri</span><span>Ucapan</span></div><p class="sm mu nvst" style="margin:4px 0 8px"></p>
+<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="sm" data-act="nvsave">Simpan warna menu</button><button type="button" class="ghost sm" data-act="nvreset">Kembalikan bawaan</button></div></details>
+<details class="sub"><summary>Latar panel per tema</summary><label>Satu per baris: nomor.panel | link gambar<textarea data-cf="bgs" rows="5" placeholder="32.0 | https://...&#10;32.* | https://... (semua panel)">${esc(bgText(c))}</textarea></label><div class="g2"><label>No. tema<input data-bn type="number" value="${c.th&&c.th[0]?c.th[0].n:''}"></label><label>Panel<select data-bp><option value="*">Semua panel</option>${PANEL.map((x,i)=>`<option value="${i}">${i}. ${x}</option>`).join("")}</select></label></div><label class="upl" style="margin-top:6px;padding:12px"><input type="file" accept="image/*" data-aup="bg">＋ Unggah gambar latar</label><button type="button" class="ghost sm" data-act="bgguide" style="margin-top:10px">🖼 Kelola latar tema ini (12 panel)</button></details>
  <p style="margin-top:14px"><button class="danger sm" data-act="cdel" data-i="${i}">Hapus kategori ini</button></p></section>`}
 let ccur=null;
 function vAdmCat(){
@@ -1982,7 +2004,7 @@ function vAdmCat(){
  <div class="savebar"><span class="sm mu">Perubahan belum tersimpan sebelum ditekan Simpan.</span><button data-act="csave">Simpan katalog</button></div></div>`}
 function collectCat(keep){const pl=document.getElementById("payList");if(pl)PAY=[...pl.querySelectorAll("[data-pr]")].map(r=>{const g=k=>(r.querySelector('[data-pf="'+k+'"]').value||"").trim();return{bank:g("bank").slice(0,30),no:g("no").slice(0,40),name:g("name").slice(0,60)}}).filter(a=>a.no).slice(0,3);const bs=$$("[data-brand]");if(bs.length){const g=k=>(document.querySelector('[data-brand="'+k+'"]')||{}).value||"";BRAND={name:g("name").trim().slice(0,40)||BRAND_DEF,logo:g("logo").trim()}}const hs=$$("[data-hero]");if(hs.length)HERO=hs.map(i=>i.value.trim());return $$("[data-cc]").map(c=>{const v=k=>c.querySelector('[data-cf="'+k+'"]');
  const th=v("th").value.split("\n").map(l=>{const p=l.split("|").map(x=>x.trim());return{n:+p[0],name:p[1]||"",u:p[2]||"",img:p[3]||""}}).filter(x=>x.n>0);
- return{id:v("id").value,txt:(cat(v("id").value)||{}).txt||{},phs:(cat(v("id").value)||{}).phs||{},n:v("n").value.trim(),pn:v("pn").value.trim(),p:+v("p").value||0,g:v("g").value.trim(),gl:Math.min(30,Math.max(0,+(v("gl")&&v("gl").value)||0)),nw:v("nw").checked,vd:!!(v("vd")&&v("vd").checked),th,bgs:parseBgs(v("bgs")?v("bgs").value:""),ph:(v("ph")?v("ph").value.split("\n").map(x=>x.trim()):[]).join("\n").replace(/\n+$/,"").split("\n").filter((x,i,a)=>a.length>1||x)}}).filter(x=>keep||x.n)}
+ return{id:v("id").value,txt:(cat(v("id").value)||{}).txt||{},phs:(cat(v("id").value)||{}).phs||{},nav:(cat(v("id").value)||{}).nav||{},n:v("n").value.trim(),pn:v("pn").value.trim(),p:+v("p").value||0,g:v("g").value.trim(),gl:Math.min(30,Math.max(0,+(v("gl")&&v("gl").value)||0)),nw:v("nw").checked,vd:!!(v("vd")&&v("vd").checked),th,bgs:parseBgs(v("bgs")?v("bgs").value:""),ph:(v("ph")?v("ph").value.split("\n").map(x=>x.trim()):[]).join("\n").replace(/\n+$/,"").split("\n").filter((x,i,a)=>a.length>1||x)}}).filter(x=>keep||x.n)}
 function summ(d){const L=(k,v)=>v?`<li><b>${esc(k)}:</b> ${esc(v)}</li>`:"";
  let o=L("Wanita",[d.wn,d.wf].filter(Boolean).join(" / "))+L("Ortu wanita",d.wp)+L("Pria",[d.pn,d.pf].filter(Boolean).join(" / "))+L("Ortu pria",d.pp)+L("Tanggal utama",d.tgl);
  (d.events||[]).forEach(e=>{o+=L(e.t||"Acara",[e.day,e.time,e.place,e.addr,e.map].filter(Boolean).join(" · "))});
@@ -2111,6 +2133,11 @@ const ACT={
  bggx(){const m=document.getElementById("bgg");if(m)m.remove()},
  async bgdl(el){if(!BGD)return;const d=BGD[+el.dataset.k],OW=1080,cv=await bgRender(d,OW);cv.toBlob(b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="latar-tema"+BGD.n+"-"+d.i+"-"+d.id+"-"+OW+"x"+cv.height+".png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},"image/png")},
  async bgall(){if(!BGD)return;for(let k=0;k<BGD.length;k++){await ACT.bgdl({dataset:{k}});await new Promise(r=>setTimeout(r,500))}},
+ async nvsave(el){const box=el.closest("[data-cc]"),n=+(box.querySelector("[data-nvn]").value||0),c=cat(box.dataset.cid);if(!(n>0))return toast("Isi nomor tema dulu");if(!c)return toast("Simpan kategori ini dulu");
+  const v={};["bg","fg","on","onfg"].forEach(k=>v[k]=box.querySelector('[data-nv="'+k+'"]').value);c.nav=c.nav||{};c.nav[n]=v;const e=edc&&edc.find(x=>x.id===c.id);if(e){e.nav=JSON.parse(JSON.stringify(c.nav))}
+  const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:CAT,hero:HERO}));toast(r&&!r.err?"Warna menu tema "+n+" tersimpan ✓":"Gagal menyimpan");nvLoad(box)},
+ async nvreset(el){const box=el.closest("[data-cc]"),n=+(box.querySelector("[data-nvn]").value||0),c=cat(box.dataset.cid);if(!(n>0))return toast("Isi nomor tema dulu");if(!c||!c.nav||!c.nav[n])return toast("Tema "+n+" sudah memakai warna bawaan");
+  delete c.nav[n];const e=edc&&edc.find(x=>x.id===c.id);if(e&&e.nav)delete e.nav[n];const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:CAT,hero:HERO}));toast(r&&!r.err?"Warna menu tema "+n+" dikembalikan ✓":"Gagal menyimpan");nvLoad(box)},
  async phreset(el){const box=el.closest("[data-cc]"),n=+(box.querySelector("[data-phn]").value||0),cid=box.dataset.cid,c=cat(cid);if(!(n>0))return toast("Isi nomor tema dulu");if(!c||!c.phs||!c.phs[n])return toast("Tema "+n+" tidak punya foto khusus");
   delete c.phs[n];if(edc){const e=edc.find(x=>x.id===cid);if(e&&e.phs)delete e.phs[n]}const r=await guard(()=>api({a:"cat_save",aid,pass:apass,cats:CAT,hero:HERO}));toast(r&&!r.err?"Foto tema "+n+" dikembalikan ke bawaan kategori ✓":"Gagal menyimpan")},
  pradd(){const pl=document.getElementById("payList");if(!pl)return;if(pl.querySelectorAll("[data-pr]").length>=3)return toast("Maksimal 3 rekening");pl.insertAdjacentHTML("beforeend",payRow({}))},
