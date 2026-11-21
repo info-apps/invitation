@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><script>window.__t='#tema-35';window.__sp=1;window.__gn=6;window.__wid="11b5d3a0f08ecb03c79d477099d8aee2";window.__api="https://script.google.com/macros/s/AKfycbz48sjVl2fPgYXF3LwZeVdhv92l-p3MeSa9bdvJFiPGxLdYKLvVUHYguy0m-e4cFcpt/exec";window.__fx='sp';window.__bg={}</script>
+<head><script>window.__t='#tema-35';window.__sp=1;window.__gn=6;window.__nav={"bg":"#ffffff","fg":"#6b7280","on":"#7a2306","onfg":"#ffffff"};window.__wid="11b5d3a0f08ecb03c79d477099d8aee2";window.__api="https://script.google.com/macros/s/AKfycbz48sjVl2fPgYXF3LwZeVdhv92l-p3MeSa9bdvJFiPGxLdYKLvVUHYguy0m-e4cFcpt/exec";window.__fx='sp';window.__bg={"0":"https://lh3.googleusercontent.com/d/1pXFupc_bB8TcY5u-50i9X9_4tKQQs0nY=w1200","1":"https://lh3.googleusercontent.com/d/1pXFupc_bB8TcY5u-50i9X9_4tKQQs0nY=w1200"}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Wedding of Amelia &amp; Muhdhor</title><meta property="og:title" content="The Wedding of Amelia &amp; Muhdhor"><meta property="og:description" content="Undangan digital · 05/12/2026"><meta property="og:type" content="website"><meta property="og:image" content="https://lh3.googleusercontent.com/d/1ZdgMH4B--k9_lAcqkjD5f-_sSskzu4vL=w1600">
@@ -245,6 +245,12 @@ html.cf .circ>[data-img]{border-radius:inherit}
 .vplay span::after,.vph span::after{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:4px}
 .vph{display:grid;place-items:center;align-content:end;padding-bottom:16px;background:linear-gradient(135deg,rgba(20,20,24,.78),rgba(40,36,44,.92));color:#fff;font:500 .92rem/1.4 var(--sans)}
 .vph small{opacity:.75;font-size:.76rem}
+/* warna menu bawah per tema (diatur admin) */
+html[data-nvc] nav{background:var(--nv-bg,var(--surface))!important}
+html[data-nvc] nav a{color:var(--nv-fg,var(--muted))!important}
+html[data-nvc] nav a.on{background:var(--nv-on,var(--accent))!important;color:var(--nv-onfg,var(--bg))!important}
+/* cincin & hiasan bingkai tidak boleh menutupi foto (agar foto bisa diketuk/diganti) */
+.circ::before,.arch::before,.arch::after{pointer-events:none}
 /* responsif: layar lebar & layar kecil */
 html{overflow-x:hidden}
 #couple>h2{font-size:clamp(1.4rem,7.6vw,2.6rem)!important;overflow-wrap:anywhere}
@@ -767,7 +773,11 @@ $("open").addEventListener("click", function(){ if (!playing) playM(); });
 $("open").onclick = function(){
   $("cover").classList.add("open"); document.body.classList.remove("lock"); scrollTo(0,0);
   setTimeout(function(){$("cover").classList.add("gone")}, still ? 0 : 1500);
-  $("nav").classList.add("on");
+  (function(){var N = window.__nav; if (!N) return; var ok = function(v){ return /^#[0-9a-fA-F]{6}$/.test(v || ""); }, r = document.documentElement, any = false;
+  [["bg","--nv-bg"],["fg","--nv-fg"],["on","--nv-on"],["onfg","--nv-onfg"]].forEach(function(x){ if (ok(N[x[0]])) { r.style.setProperty(x[1], N[x[0]]); any = true; } });
+  if (any) r.setAttribute("data-nvc", "1");
+})();
+$("nav").classList.add("on");
   if (MU && !MU.bad) $("music").style.display = "block";
 };
 $("music").onclick = function(){ playing ? pauseM() : playM(); };
@@ -1378,7 +1388,7 @@ onScroll();
     return [].slice.call(a);
   }
   function picTarget(t){
-    var d = t.closest("[data-img]");
+    var host = t.closest(".circ,.arch"), d = t.closest("[data-img]") || (host && host.querySelector("[data-img]"));
     if (d) { var s = {cover: 0, bride: 1, groom: 2, closing: 3}[d.getAttribute("data-img")]; if (s !== undefined) return {kind: "ph", slot: s}; }
     var gl = galList(), gi = -1; gl.forEach(function(el, i){ if (el === t || el.contains(t)) gi = i; });
     return gi >= 0 ? {kind: "ph", slot: 4, g: gi} : null;
